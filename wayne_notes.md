@@ -26,7 +26,7 @@ More in `wayne/critique_notes.doc`
 The concept of evolution has changed since Darwin- matured into thinking about genotypic changes across time.  
 A variety of sources of evidence have been used to develop the theories of evolution. The fact of evolution- that there was descent with modification- long predates Darwin. 
 
-Four premises led Darwin to his theory of evolution- 
+Four premises led Darwin to his theory of evolution-   
 1. More individuals are born than can possibly survive;   
 2. There will be a struggle for existence;     
 3. There is some phenotypic variation among the individuals;  
@@ -34,7 +34,11 @@ Four premises led Darwin to his theory of evolution-
 
 At the time of Darwin, thinking was very typological- platonic ideals of species, with mistakes, not variation. Much of OOS is focused on anagenisis, rather than speciation per se.  
 
-At the time of Darwin, there were a few key problems of 1) No mechanism of inheritance; 2) Gaps in geological records; 3) Origin of complex structures.  
+At the time of Darwin, there were a few key problems of 
+1) No mechanism of inheritance;  
+2) Gaps in geological records;  
+3) Origin of complex structures.   
+
 Post-Darwinian advances have included Mendel's work on particulate inheritence; Fischer, Mayr etc's pushing of theory forward; Motoo Kimura's neutral theory; modern discovery of abundant genetic variation.  
 
 **Persistent problems**  
