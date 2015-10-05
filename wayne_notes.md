@@ -48,6 +48,10 @@ Post-Darwinian advances have included Mendel's work on particulate inheritence; 
 4. Speciation;  
 5. Unit of selection.  
 
+
+------------
+### 1 October 2015  
+
 **Darwin's lines of evidence**  
 1. Direct observation;  
 2. Comparitive anatomy;  
@@ -94,3 +98,63 @@ Shared characteristics between organisms can only be explaiend by DWM.
 Work by Cuvier showed that some structures were homologous- derived from shared ancestry; others, like bird and bat wings, were analogous (despite the individual structures, like the separate bones, being homologous).  
 Vestigial structures are another example of why comparitive anatomy provided useful evidence about evolution. Some horses end up developing an extra toe because of incomplete gene suppression.  
 Selection is constrained by contingency.  
+
+----------
+
+### 5 October 2015   
+
+**Molecular Ecology**  
+Adaptive and deleterious variation is a key frontier for mol ecol- how does selection change gene frequencies?
+
+The field has a history in studying neutral markers to infer demographic processes- but there is now a shift to ecologically important genes- eg. how does selection drive local adaptation?  
+Mol Ecology has been revolutionary in some fields- it used to be thought that birds are primarily monogamous, but genetic tests of egg clutches revealed the impacts of all sorts of extra-pair copulation, etc.  
+
+Questions  
+A) Individual relatedness and population pedigrees;  
+B) Population variation, demography and gene flow;  
+C) Phylogeography;  
+D) Genetic basis of adaptation;  
+E) Gene expression;  
+F) ;  
+G) ;  
+H) Ancient DNA.  
+
+*There are many potential problems*-  
+Locus specific effects based on type of data (SNPs vs Allozymes vs Microsats, ...)  
+Analytical models- assumptions are often broken  
+Sampling issues- sample size and biases  
+Methodological issues- cost? appropriate technique?  
+
+mtDNA often used for species ID (Barcoding), assessing level of genetic polymorphism within and between populations.  
+Microsats often used for individual ID, relatedness estimates, reconstructing pedigrees, census estimates and Ne, level of polymorphism within and between populations. Microsats problematic beyond intraspecific because of convergence in microsat #.  
+
+
+**Individual based studies**   
+*within group*:  pedigree, mating systems, inbreeding, reproductive success, parentage, and kinship  
+Pedigree made for full population of Yellowstone wolves- basis for anything we can say about heritability. Dominance of genes determined this way- black coat was dominant in the wolf case. Ancestry of genes analyzed- black allele came from dogs and confers immunity against distemper. Disassortative mating between black and gray wolves revealed. Inbreeding was shown to be really rare and only occurred in extreme situations.   
+
+*between group*:  inter-group relatedness, dispersal, inter-group interactions   
+Can provide insight into conservation biology- population structure analysis of SaMo Mtn Lions showed that many individuals were killed due to density of individuals, not necessarily due to scarcity.  
+
+**Population based studies**  
+Genetic variation within population tells us sometihng about effective population size (Ne)- what is the impact of drift?  Demographic history of a population can also be estimated this way- bottlenecks? population expansions? selection?   
+Genetic differentiation among populations- are there migrants from one population to another? Do migrants reproduce in new population? Allele differentiation, landscape genetics  
+Rare alleles are very common- very similar to SAD in forests. Over time, stretches of homozygosity are broken up- this is also a function of effective size, so demographic history reconstructed this way (?) ([PSMC](http://lh3.github.io/2014/07/20/alternatives-to-psmc/)). 
+
+**Landscape Genetics**  
+Model genetic patterns across landscape as f(environmental parameters). Isolation by Distance is the crudest version of this- more distant populations have fewer migrants, so more differentiation with distance. But in some cases (e.g. migratory animals like wolves) geographical distance is less informative than environmetal dissimilarity (e.g. vegetation type). Genetic structure of wolves can be mapped onto vegetation type too. We can synthesize this approach with, MaxEnt to model the distribution of different ecotypes within a species. 
+
+**Phylogeography**  
+Landscape can structure genetics in a heirarchical way- this allows us to map distributions onto evolutionary histories of lineages. EG turtle beaches have distinct mt haplotypes- turtles are phylopatric.  
+
+**Adaptive variation**  
+Started off with MHC and neutral proxies. Modern studies usee genome wide studies, genome sequencing, and gene expression/epigenetics. When making chips of SNPs, we need to be careful about the population used for SNP discovery- what if there is a bias in the reference population? 
+
+Selective sweep- variation is reduced at a given site. Determine candidate SNPs under selection by looking for SNPs with really high Fst values and something about homozygosity - figure out the latter. Then the genes identified as candidate can be subject to GO analysis to look for functional gene classes. 
+
+Once we have candidate gene, there is a resequencing study. That gene and regulatory sequences are assayed in large populations - are there non-synonymous changes? Was the non-synonymous SNP and outlier within the gene?
+
+Use of Crispr-cas9 into cell lines of wild populations to understand genetic/cellular consequences. seems cool but potentially limited- how can we really extend from the impacts in a cell line to full organisms? 
+
+
+
