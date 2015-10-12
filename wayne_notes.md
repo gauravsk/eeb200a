@@ -156,5 +156,64 @@ Once we have candidate gene, there is a resequencing study. That gene and regula
 
 Use of Crispr-cas9 into cell lines of wild populations to understand genetic/cellular consequences. seems cool but potentially limited- how can we really extend from the impacts in a cell line to full organisms? 
 
+----------------
+
+### 7 October 2015       
+ 
+**Species and speciation**     
+Linneaus's typological view of species- variation was imperfection in representation of the *type*. But of course, variation is critical to adaptation and as the raw material for evolutionary change.  
+The *biological species concept* emphasizes variation and reproductive isolation- independent evolutionary lineages over time. Apart from admixture, mutation (variation) is species specific. This is difficult to test- what is "potential" to interbreed? Also can't apply to asexual organisms...!    
+
+Anagenesis v Cladogenesis  
+Hybrid speciation is very common in plants- 30-50% is the number BW uses. Phylogenies end up with many reticulations- Clarkia an example of this  
+Repro Isolation can come about in two major ways: prezygotic (e.g. temporal, habitat, behavioural, mechanical, gametic isolation) and postzygotic (hybrd inviability, hybrid sterility, or hybrid breakdown).   
+
+**Allopatric speciation** occurs when populations are geographically isolated and the lineages diverge enough (due to drift, selection, ...) so that they can no longer interbreed. This requires geography. This is likley to have really strong effects- founder effects, genetic drift, mutation accumulation, and selection.   
+Tests for these can be straightforward:  
+1) Long-separated allopatric populations should not be able to interbreed;   
+Using allozyme differences as a proxy for genetic distance, Coyne and others showed that degree of pre- and post-zygotic isolation was positively correlated with genetic distance.  
+
+
+2) Degree of Repro Isol should reflect divergence time of allopatric populations.  
+Hybrids of two Arrow leaved Violet species are less fit than parental form --> reinforcement acts to select for the "ability" to "avoid" intraspecific mating. Flip is that sympatric pairs should have more prezygotic isolation than allopatric pair, since there is a higher cost of wasting gametes. 
+
+Isolation barriers can form over different time scales- e.g. glaciers can operate over thousands of years. Bird differentiation does not match the last glacial patterns. Glacial refugia "more or less throughly debunked."  Land bridges/disappearance thereof can form geographic barriers. These can make predictions to test with genetic data.  
+
+**Peripheral speciation model**- there is some central population of a species, but there are small peripheral populations at the outer boundry of the OK zone. This small population has little gene flow with central population --> the lineages diverge.  So 1) Founder effect, 2) Divergent selection, 3) Strong genetic drift in peripheral population, 4) "Genetic Revolution"-- more inbreeding, more homozygosity, ... Item 4) is not strongly supported by theory or data. Rice and Hostert 1993- Strong divergent selection in isolated lines may lead to evolution of reproductive isolation. Diet can influence speciation too- shown in 2010 PNAS paper for Drosophila.   
+
+**Parapatric speciation**- 1) Species expands into new area across an environmental transition; 2_ New allele combinations are selected ; 3) Steep cline results (allele frequency changes across hybrid zones); 4) Selection acts against hybirds, Reinforcement happens. 
+
+The width of hybrid zones is a modeled as $\frac{S}{h^{1/2}} = W$ where S is the standard deviation of the distance to which genes disperse in a generation (average distance between distance between reproducing offspring and its parent); h = selection coefficient against heterozygotes
+
+In Manakin bird example, the yellow coloration is preferred by the white banded females, suggesting that the yellow will enter into the other species.  
+
+**Speciation with gene flow**  
+Admixture among populations is common at short and long scales. See Tom Smith's 1998 Science paper.  
+
+**Tension/Hybrid Zones**- they follow Haldane's rule that "When in the offspring of two different animal races(spp) one sex is rare, absent or sterile, that sex is the heterogametic sex"   
+There is an alternative "Recessive allele theory"- exposure of deleterious recessive alleles in X chromosome of males causes sterility/decreased viability. Genes w/ the greatest effect on hybrid sterility tend to be X-linked.  
+
+**Sympatric speciation** - speciation when individuals are physically capable of encountering each other with some liklihood.  
+Consider a simple model:  
+1) A balanced polymorphism is maintained by disruptive selection (eg white vs peppered moth by trees);  
+2) Selective difference between the two ecotypes is large;  
+3) Habitat selection is imposed by birth place or birth time or other ecological factor (e.g. some bias in  where eggs are laid);  
+4) Then, speciation can occur.  
+
+Race formation in apple maggot is a remarkable example of sympatric sppn. Maggots migrated from Hawthorne apple to domesticated apples and sour cherry- but emergence times changed with the different tree phenologies. There is assortative mating, and emergence time is heritable.  
+
+Speciation in Rift lake Cichlids- allopatric or sympatric? Early studies suggested recent MRCA but there may have been isolated pools when the lakes last dried 10k years ago, so may have happpend allopatrically...  When this was done in Crater lakes of Cameroon. These lakes are small so things should be "able" to get around. All the cichlids in these lakes all shared a common MRCA that they did not share with any species outside the lake. 
+
+**New and Exciting**  
+1. Speciation genes;   
+2. Divergence with gene flow;  
+3. Sympatric speciation models and tests;  
+4. Epigenetics. 
+
+**Conservation genetics and the new molecular age**  
+What aspects of the genome are adaptive/deleterious? What populations are in most trouble due to accumulation of crappy changes? The goal should be to preserve adaptive variation/adaptive potential.     
+
+1. Effect of habitat fragmentation- bigger impact of drift in small populations, gene flow no longer occurring, genetics units lost.  
+2. Hybridization with invasive species- domesticated salmon send genes into wild populations; wolf-dog hybrids!  Killer bees in texas- hybrids of American with killer African bees. 
 
 
