@@ -217,3 +217,62 @@ What aspects of the genome are adaptive/deleterious? What populations are in mos
 2. Hybridization with invasive species- domesticated salmon send genes into wild populations; wolf-dog hybrids!  Killer bees in texas- hybrids of American with killer African bees. 
 
 
+----------------------------
+
+### 12 October 2015
+
+Preservation of adaptive diversity maximizes probability that successful genotypes will be around. Identification of populations with lots of deleterious mutation is helping identify populations that might be at hightened risk.  
+
+**Genetic biodiversity**   
+Its role within populations (predicting changes in heterozygosity, allelic diversity, impact of inbreeding). etc  
+Differentiation between populations- habitat fragmentation impacts gene flow  
+Identifying adaptive and deliterious changes.  
+
+Genetic diversity ~ f(variatbility)-- allelic diversity; heterozygosity;    
+Genetic diversity ~ f(distribution)-- geographic distribution; frequency;    
+Genetic diversity ~ f(function)-- neutral vs adaptive changes;    
+  Neutral changes are only impacted by drift- can tell us something about demographic past; Adaptive changes can be impacted both by drift and selection.  
+  
+Threats to genetic biodiversity:   
+- genetic effects of habitat loss/fragmentation (decreased pop size, decreased variability, lower gene flow)   
+Conservation of biodiversity is important in an uncertain world -   
+  1. any variation can be the basis for adaptive responses.  
+  2. Prevention of decline in fitness associated w loss of variability and inbreeding.   
+      hole in heart of female Florida Pumas, failure of male sperm, malformed tail (just an effectt of inbreeding)   
+      - this population was "genetically rescued" by Texan females brought in  
+      - lots of abnormal behaviour... parent killed offspring, siblings killed siblings. "inverse Allee effect??"    
+  3. Utilitarian need for humans
+  
+Demography can affect genetics:  
+  - Founder effects can drive decreases in heterozygosity    
+  - Genetic drift can exacerbate these effects... Selection is inefficient- a very high selection coefficient is required to be super high to weed out deleterious mutations --> overall decrease in fitness.     
+  - Inbreeding is unavoidable...   
+      - two randomly selected alleles more likely to be identical by descent than expected in a randomly breeding population    
+      - higher homozygosity --> deleterious recessive mutations mroe likely to have phenotypic impacts   
+      - juvenile mortality of inbred population is pretty much always higher than that of outbred populations.  
+Extinction vortex  - Gilpin & Soule's paradigm applied to small populations.    
+- Theory predicts that variability reduces as a function of $1/2N_{e}$
+- But data show that N = 16 population has decrease in heterozygosity you'd expect out of N = 9 population. We can try to model these deviations from expectation using estimates of things like sex bias.  EG if there are only 2 males that mate with 35 females, $N_{e}$ = 7.6   $Ne = 4NfNm/(Nm+Nf)$    
+- Variation in number of offspring is also important - large packs, but only one or two do all the breeding (e.g. in wild dog - large #s needed for pack) $Ne = (4n-2)/(Var+2)$    
+When there is l-v pred-prey dynamics (or other cycling), harmonic mean is a better estimate of effective size than arithmatic mean- depression of Ne.   
+Heterozygosity can be estimated and projected very easily.  (1/2n per generations)
+
+"50/500 rule" of mutational meltdown- to preserve a species, 50 individuals should be captured and the population grown to 500.  
+Any finite population loses heterozygosity- unavoidable consequence.   
+Allelic diversity drops rapidly- this is what leads to a decrease in heterozygosity.  
+Inbreeding coefficient rises with times- this can be done simplistically by assuming HWE and calculating deviation due only to inbreeding.  
+Depression in fitness is generally approximately equal to inbreeding coefficient.  
+
+
+**Populations are connected by gene flow**    
+Fst is a function of effective size and migration rates. Very small number of migrants can "cancel out" differentition by drift- 1 migrant/generation.   
+Fst also increases with distance. But the slop of the function is a function of the behaviour of the animals in question. Differentitation slower in widely moving species like wolves than in species that don't move very much- eg bighorn sheep  
+structure+Fst can be used to estiimate differentiation and also migration rates- caught in one population but are assigned to another population. But the observed Fst's were too high.... the migrants weren't reproducing or exchanging genes with their new friends.  
+
+Genetic exchangability- the factor that define the limits of spread of new genetic varients.  
+Ecological exchangability- 
+
+Phenotypic variance can be decomposed into genetic and environmantal variance.  
+h^2_b = Vg/Vp
+
+h^2_n = only additive effects of the genes are considered
