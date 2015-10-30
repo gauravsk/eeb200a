@@ -1,0 +1,140 @@
+---
+title: "PyRate exercise"
+author: "Gaurav Kandlikar"
+date: "October 29, 2015"
+output: pdf_document
+header-includes: \usepackage{graphicx}
+geometry: margin=.9in
+---
+
+### Step 1 
+
+Prep `Ursidae.txt` to be ready for `PyRate` by using `extract.ages()` in `R` utilities:
+
+```{r eval = F}
+source("pyrate_utilities.r")
+extract.ages("example_files/Ursidae.txt")
+```
+
+This creates `Ursidae_PyRate.py` in the `example_files/` directory. 
+
+
+### Step 2
+
+Run `PyRate` on `Ursidae_PyRate.py`:  
+
+From `PyRate` folder in terminal, run the following line-   
+
+`python PyRate.py example_files/Ursidae_PyRate.py`
+
+
+Sample output:
+
+```
+                            PyRate 0.600       
+                             20151024         
+
+           Bayesian estimation of speciation and extinction
+                  rates from fossil occurrence data        
+
+               Daniele Silvestro, Jan Schnitzler et al.
+                        pyrate.help@gmail.com
+
+
+
+Using Gamma priors on the birth-death rates.
+
+started at: Thu Oct 29 16:40:02 2015
+initializing chain...
+
+0*	post: -2379.83 lik: -2371.41 prior: -8.42 tot length 209.96
+
+1000	post: -1242.94 lik: -1234.47 (-862.71, -371.77) prior: -8.46 tot.l: 318.82 k: 2
+	t.frames: [ 23.748   0.   ] (sp.)
+	t.frames: [ 23.748   0.   ] (ex.)
+	sp.rates: [ 0.244] 
+	ex.rates: [ 0.382]
+	q.rate: 0.697 	Gamma.prm: 1.0
+	ts: [ 5.494  9.824  6.615  4.088  7.749] ...
+	te: [ 3.017  6.266  0.491  3.037  5.598] ...
+```
+\clearpage
+
+### Step 3
+
+After PyRate runs, inspect generated log files.
+
+*Ouptut in `Ursidae_1_sum.txt`*:    
+
+```
+PyRate 0.600        build         20151024         
+input: ['example_files/Ursidae_PyRate.py'] output: example_files/pyrate_mcmc_logs/Ursidae_1
+PyRate was called as follows:
+Namespace(A=2, B=1, BF=[], M=10, N=None, S=1000, T=1.0, a=0.3, b=0, cite=False, d='', dpp_eK=2.0, 
+dpp_f=500, dpp_grid=1.5, dpp_hp=2.0, fR=1.0, fS=0.7, fU=[0.02, 0.18, 0], fixSE='', fixShift='',
+input_data=['example_files/Ursidae_PyRate.py'], j=1, k=10, logT=2, mC=False, mCov=0, mG=False, 
+mHPP=False, mL=1, mM=1, mProb='', multiR=1, n=10000000, nT=5, ncat=4, out='', p=1000, pC=1, 
+pL=[1.1, 1.1], pM=[1.1, 1.1], pP=[1.5, 1.1], pS=2.5, plot='', r=1, s=1000, sw=100, t=0.03, 
+tC=[0.2, 0.2, 0.15], tQ=[1.2, 1.2], tR=1.2, tS=1.0, tT=1.0, tag='', thread=[0, 0], trait=1, 
+wd='')
+```
+
+`Ursidae_1_mcmc.log` is a table of MCMC posteriors, priors, likelihoods, and `TE` and `TS` for all taxa. 
+
+
+`Ursidae_1_marginal_rates.log`: This file can be opened with `Tracer` (Figure \ref{fig:tracer}). *Note: I am not really sure what to do with this Tracer output- how can we use this information to determine the appropriate number of burnins?* We can use this information to determine a reasonable burn-in (I will just assume 1000 for now- to be updated after session?), and then use the burnin estimate to create a plot of the logs. 
+
+
+### Step 4
+Plotting from the `Ursidae_1_marginal_rates.log`.    
+
+We can plot using this command:
+
+`python PyRate.py -plot ~/full/path/to/pyrate_mcmc_logs/Ursidae_1_marginal_rates.log -b 1000`
+
+*Note to self*- use full path; otherwise program threw an error.
+
+This step creates two documents in the `pyrate_mcmc_logs` folder: the first is an `R` script   
+(`Ursidae_1_marginal_rates_RTT.r`); the second is a pdf file made using the `R` code  
+(`Ursidae_1_marginal_rates_RTT.pdf`; Figure \ref{fig:Rplot}). I kind of want to make a figure that includes both Sppn and Extn rates on the same plot so we can overlay... maybe another day!
+
+From the plot of Speciation Rate over time, we see that the Ursids had experienced a high speciation rate c. 20 MYA; that speciation rate declined rapidly over 3-5 million years to a basal speciation rate. Over this time period, the extinction rate in the clade has remained at a relatively constant basal rate which is approximately equal to the basal speciation rate. There has been a slight upward trend in extinction rate since ~10 MYA. These two sum up to mean that Ursids experienced a rapid diversification from ~20 to ~17 MYA, after which diversity remained constant for ~10 million years. Since then, there has been a slight decline in diversity, as the upward trend of extinction rates has not been counteracted by any change in speciation rates. 
+
+
+We can use this command to test models of how many rates of speciation there have been (alt, how many rate switches there have been). 
+
+`python PyRate.py -mProb ~/full/path/to/Ursidae_1_mcmc.log -b 1000`
+
+The output is as follows:
+
+```
+First 1000 samples excluded as burnin.
+
+Model           Probability
+          Speciation  Extinction
+1-rate    0.0122      0.6791
+2-rate    0.645      0.2458
+3-rate    0.2686      0.0619
+4-rate    0.0631      0.0117
+5-rate    0.0103      0.0014
+6-rate    0.0008      0.0001
+
+```
+
+This suggests that a 2-rate model (i.e. one rate switch) is the most probable for speciation, and a 1-rate (i.e. no switch) model for extinction. 
+
+\clearpage 
+
+\begin{figure}[h]
+  \caption{Ursidae mcmc log in Tracer}
+  \centering
+    \includegraphics[scale=0.4]{figures/pyrate_tracer.png}
+  \label{fig:tracer}
+\end{figure}
+
+\begin{figure}[h]
+  \caption{Plot of Sppn, Extn, and Diversification Rates from marginal rates file}
+  \centering
+    \includegraphics[scale=0.7]{figures/pyrate_Rplot.pdf}
+  \label{fig:Rplot}
+\end{figure}
