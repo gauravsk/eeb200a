@@ -267,7 +267,7 @@ Depression in fitness is generally approximately equal to inbreeding coefficient
 **Populations are connected by gene flow**    
 Fst is a function of effective size and migration rates. Very small number of migrants can "cancel out" differentition by drift- 1 migrant/generation.   
 Fst also increases with distance. But the slop of the function is a function of the behaviour of the animals in question. Differentitation slower in widely moving species like wolves than in species that don't move very much- eg bighorn sheep  
-structure+Fst can be used to estiimate differentiation and also migration rates- caught in one population but are assigned to another population. But the observed Fst's were too high.... the migrants weren't reproducing or exchanging genes with their new friends.  
+structure+Fst can be used to estimate differentiation and also migration rates- caught in one population but are assigned to another population. But the observed Fst's were too high.... the migrants weren't reproducing or exchanging genes with their new friends.  
 
 Genetic exchangability- the factor that define the limits of spread of new genetic varients.  
 Ecological exchangability- 
@@ -276,3 +276,43 @@ Phenotypic variance can be decomposed into genetic and environmantal variance.
 h^2_b = Vg/Vp
 
 h^2_n = only additive effects of the genes are considered
+
+---------------
+
+
+### 19 October 2015  
+
+**Genomic science** - a critical component is the study of genome evolution.   
+
+"The science scales from genes to communities"- just take a look at this slide  
+
+There's a lot of questions about how to translate information from one scale to the scale above or below it- e.g. proteomics tells us different information than does transcriptomes, which in turn is different from genomics, which doesn't tell us much about the organization within cells, cells within tissues, tissues within organisms, and organisms within communities. The link between communities is also tenuous for now- e.g. microbial community structure with host community?   
+
+**Aims of genomic science**    
+1. Establish integrated web based databases and research interfaces- not hypothesis driven, but immensely helpful. Historically, GMOD was important...    
+2. Assemble genetic maps- order sequence fragments along genomes. Genetic maps are inferred from recombination data (pedigree, RILs, somatic cell hybrids (melding of hamster and human cells - somehow chromosomes are chunked up, so regions together in fusion indicative of proximity in human), sperm typing, pop gen). Physical mapping was done largely with YACs (yeast artificial chromosomes)    
+3. Generate and order genomic and expressed sequences.  
+  a. Shotgun seq (large scale fragmentation; sequencing; assembly)   
+  b. Assembly- generateion of contigs, scaffolds and gap fill in- use of De Novo methods (10-12k!!!!!).    
+  c. Annotation- gene identification, comparitive genomics, ESTs (old school), gene prediction via bioinfo, etc. 
+  GATK   
+  
+4. Characterize DNA sequence diversity- SNPs, Indels; Haplotypes (string of genome inherited together; phase prediction- which SNPs are on one haplotype??)    
+5. Compile an atlas of gene expression- tissue by tissue (in humans, at least initially- now the human is used as the baseline)   
+6. Accumulate functional data- functional genomics- observe expression (EST, in situ hybridization, RNA seq), expression prediction, observe in vivo   
+7. Provide a resource of comparison to other genomes.
+
+**Primer of Genome Science**
+
+UCEs- useful in fish and birds  
+
+**Tests for positive and negative selection**  
+
+Bustamante et al. 2006- properties of genetic differences between humans and chimps.   
+Synonymous/non-synonymous mutation rates within and between species- when rates are similar between species, we can advance hypotheses about purifying selection.   
+Many of the genes are under selection   
+We can break this down by gene function or GO   
+Morbidity as a function of # of changes in a gene- low variation in genes (selection targets) linked to high morbidity of changes.  
+Extreme selection pressures --> selective sweeps that fix in genome.  
+
+GWAS should be followed up with Capture Arrays designedd around the candidate SNPs  
