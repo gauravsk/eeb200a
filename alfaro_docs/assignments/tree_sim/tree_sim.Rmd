@@ -1,0 +1,148 @@
+---
+title: "Tree Simulation assignment"
+author: "Gaurav Kandlikar"
+date: "November 5, 2015"
+output: pdf_document
+---
+
+getting set up
+```{r setup, message=FALSE}
+library(geiger); library(phytools); library(diversitree)
+
+source("~/grad/Dropbox/200a 2015 (1)/alfaro-lectures/lab1-trees/rabosky_functions.R")
+```
+
+Using `simulateTree` in `phytools` to simulate tree under birth-death model
+
+```{r birth-death}
+pars <- c(10, 0) # First lambda, then mu- these are the true parameters underlying the tree
+
+tt <- simulateTree(pars = pars, max.taxa = 100)
+
+plot(tt, show.tip.label = F, main = bquote(paste("True parameters: ", 
+                                                 lambda == .(pars[1]), 
+                                                 ", ", mu == .(pars[2]))))
+```
+
+We know the paramters underlying the birth-death process here, so we can check how well we can estimate them froom the tree. For this we use the `made.bd()` function of `diversitree`. This is the description:
+
+`Prepare to run a constant rate birth-death model on a phylogenetic tree. This fits the Nee et al. 1994 equation, duplicating the birthdeath function in ape. Differences with that function include (1) the function is not constrained to positive diversification rates (mu can exceed lambda), (2) [eventual] support for both random taxon sampling and unresolved terminal clades (but see bd.ext), and (3) run both MCMC and MLE fits to birth death trees.`
+
+We then use `fitDiversitree()` from `rabosky_functions.r`
+
+```{r make.bd}
+make.bd(tt)
+fit <- fitDiversitree(make.bd(tt))
+
+# Extract parameter estimates
+fit$pars
+```
+
+The `lambda` and `mu` estimates above seem significantly different from the true values of 10 and 0. 
+
+We can do a null model to get a 95% confidence interval on these estimates:
+
+
+```{r exercise_1, cache = TRUE}
+reps <- 1000
+pars <- c(10, 0) # First lambda, then mu- these are the true parameters underlying the tree
+
+lambdas <- numeric(reps)
+mus <- numeric(reps)
+
+for (i in 1:reps) {
+  fit <- fitDiversitree(make.bd(simulateTree(pars = pars, max.taxa = 100)))
+  estimates <- fit$pars
+  lambdas[i] <- estimates["lambda"]
+  mus[i] <- estimates["mu"]
+}
+
+mean(lambdas); mean(mus)
+
+# Quantiles
+mu_lines <- quantile(mus, probs = c(0.05, 0.95))
+lambda_lines <- quantile(lambdas, probs = c(0.05, 0.95))
+
+mu_lines; lambda_lines
+
+# Plot
+par(mfrow = c(1,2))
+
+# Lambda plot
+plot(density(lambdas), main = "Distribution of lambdas", xlab = "Estimated lambda", lwd = 2.2)
+abline(v = lambda_lines, lwd = 2, col = "darkred", lty = 2)
+# text(x = c(lambda_lines[1]-1, lambda_lines[2]+1), y = 0.285, labels = round(lambda_lines, 3))
+text(x = mean(lambdas), y = 0.285, labels = round(mean(lambdas), 3))
+
+# Mu plot
+plot(density(mus), main = "Distribution of mus", xlab = "Estimated mu", lwd = 2.2)
+abline(v = mu_lines, lwd = 2, col = "darkred", lty = 2)
+# text(x = c(mu_lines[1]-1, mu_lines[2]+1), y = 0.51, labels = round(mu_lines, 3))
+text(x = mean(mus), y = 0.51, labels = round(mean(mus), 3))
+```
+
+### TO DO: 
+What does this imply about what we can learn from empirical studies of molecular phylogenies about diversification?
+
+### Exercise 2
+Simulate 100 trees under a constant rate of birth and death. Extract the number of species from each tree. Create a histogram of the resulting distribution. How much stochasticity is associated with the outcome of a birth-death process? What does this suggest about our ability to intuitively identify clades that have undergone exceptional speciation?
+
+I will use `pbtree()` in `phytools` to make trees with constant birth death rates:
+```{r exercise_2, cache = T}
+reps <- 100
+num_tips <- numeric(reps)
+for (i in 1:reps) {
+  tt <- pbtree(b = .5, d = .05, t = 12)
+  num_tips[i] <- length(tt$tip.label)
+}
+par(mfrow = c(1,1))
+plot(density(num_tips), main = "Density of tip numbers", xlab = "Num tips")
+
+mean(num_tips); quantile(num_tips, c(0.05, 0.95))
+```
+
+There is clearly a wide range of final number of species derived from the same underlying birth/death rates- this means that the estimates we derive from a phylogeny can in turn lead to a wide range of topologies. 
+
+We can use `ltt()` to make a lineage-through-time plot
+```{r ltt1}
+ltt(tt) # This will plot the last tree made in the loop above
+# Should the slope of this line be equal to (b-d)?
+# abline(a = c(0, 0.45))
+```
+
+### Next
+
+Simulation where extinct taxa are analysed. We use te function `sim.bdtree` from `geiger`. 
+```{r extinct}
+pars <- c(10, 5)
+tt <- simulateTree(pars, max.taxa=100)
+ttEx <- sim.bdtree(b = 10, d = 1, stop = "taxa", t = 100, n = 100 )
+
+livingOnly <- drop.fossil(ttEx) # Subset to extant taxa only
+
+```
+
+### Exercise 3. What does extinction do to the shape of the tree?
+
+Simulate 5 trees with and without extinction that have similar net diversification rates. Can you say anything about the general shape of the trees that have been simulated with extinction?
+
+```{r exercise_3}
+reps <- 5
+
+par(mfrow = c(reps ,2), mar = c(1,1,1,1), oma = c(0,0,2,0))
+
+for(i in 1:reps) {
+  
+  pars <- c(10, 5)
+  tt <- simulateTree(pars, max.taxa=100)
+  
+  ttEx <- sim.bdtree(b = 10, d = 1, stop = "taxa", t = 100, n = 100)
+  livingOnly <- drop.fossil(ttEx) # Subset to extant taxa only
+
+  plot(tt, show.tip.label = FALSE)
+  if(i == 1) (mtext(side = 3, line = 1, text = "Extinct + Extant"))
+  plot(livingOnly, show.tip.label = FALSE)
+  if(i == 1) (mtext(side = 3, line = 1, text = "Extant only"))
+}
+
+```
