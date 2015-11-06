@@ -49,6 +49,79 @@ We need to use phylogenomic approaches to push the science forward- the best stu
 UCEs help modern target-based sequencing methods. This has recently been applied to Fishes as well.  This approach allows us to sample from many regions of the genome.  
 
 
+------------------------------------
+## 2 Nov 2015
+
+**Random notes on Bayesian analysis**     
+Effective sample size is not equal to number of chains because of autocorrelation of sample points within each chain- this ESS is shown in Tracer, and an ESS > 200 should be good enough.   
+MCMC is not optimizing- it is just jumping around and reacting to current state- always tend to go up; may step down in likelihood.   
+
+**UCE data**      
+
+How should UCE data be analyzed? Followup to Gatese et al.  
+Concatenated approach- combine all loci into one matrix assumes (all sequences evolved on one tree). This felt more inclusive than doing each gene separately and trying to reconcile all the different stories that come out.  
+
+Gene-tree/Species-tree methods allow for the possibility that each gene tree can estimate a different topology than the synthesized species tree. Each gene tree gets its own favorite topology, and given this distribution a most likely species tree is estimated. This approach makes sense - it is well documented that genes could estimate different topology. But there is a problem, namely that the process of allowing every gene to have its own topology is much more difficult, computationally! So many parameters to estimate!
+
+Horizontal transfer is missed up and hard to deal with. If you get an extinction of a gene in a lineage and a horizontal transfer from a non-sister taxon, then the gene tree is going to be very messy.    
+Genetic drift (multiple copies of alleles exist within a population and are not completely sorted out before the next speciation event occurs- eg smaller populations, short times between speciation events) can cause problems... Jargon: deep coalescence can be caused by incomplete lineage sorting.  
+
+NGS should be a good fit for gt/st analyses, but there were problems. The programs wouldn't run with many-a genes. NGS also won't give you a complete matrix- some genes will be missing- this poses a much bigger problem for gt/st than it does for concat People have tried to work around with things like concatalescent, which Gatese and Springer say just don't work!  
+
+Gatese and Springer tried concatenating a bunch of data for mammals and showed that concat analyses recovered all of 10 commonly accepted nodes- but these nodes are not all recovered by other gt/st methods.  
+
+But concatenation can lead to biased estimates- it's true that we are getting strong support for nodes that are widely accepted- but you should expect this, because when you say there is a single tree estimated from all data, adding data will indeed increase support for a given topology.
+
+Supermatrix can take morphological characters as input.  
+Many small genes in a gt/st approach will probably not be able to get a well resolved tree- just too many tips for a 300-1000 base pair locus to decide.  
+
+**Speciation**    
+What explains species richness?   
+Key innovations? Climatic/geological events? Biogeographic phenomena?   
+
+There are many interesting ideas of what might be going on, but we need a model for how species richness evolves.   
+There are some simple processes we can think of- the simplest is the pure birth model.   
+
+**Pure Birth model**- there are lineages, which have a rate of producing new lineages `b`. `N(t) = N(0)e^(bt)`. The number of species grows to infinite in this model in an exponential way ("log lineage through time plot"). This is a very tractable process.  In this model, waiting time (time between branching events) is somewhat log normally distributed; this distribution of waiting time lets us infer the speciation rate. The exact tip positions of the taxa doesn't quite matter too much.   
+Rate of diversification in metazoan orders increases exponentially in Cambrian.  May also apply to Hawaiian silversword (Baldwin and Sanderson).    
+Warbler diversification is shifted from the log-linear expectation- this might suggest a rate shift- in warblers, early rapid diversification followed by constant diversity.    
+
+But obviously this model has its problems.... if an early diversification suggests a high speciation rate right now, that diversification rate will almost certainly not be sustained! 
+
+We can fix this in a few ways.   
+
+**Birth-Death model**- like pure birth, but allows extinction to happen. `lambda` represents speciation rate; `mu` represents extinction rate.   
+`E[N(t)] = N(0)e^(bt)`- as long as `d-b` is positive there will still be an exponential increase, just slower than before.   
+
+When we have a molecular phylogeny, we get a lower slope until very close to the end, but then you get a "pull of the recent" when speciation rate has to ramp up very close to present.
 
 
+In molecular phylgenies the speicies diversity right now is always going to be higher than diversity in the past.  
 
+Using the `gamma` statistic to assess distribution of waiting times in the tree. If constant rate, waiting time should be normally distributed- but if there were rapid radiation then the `gamma` asks whether the rate of diversification is constant.  
+
+Gamma is just a function of the number of nodes and waiting times. 
+
+If early branching (speciation events before halfway time), `gamma` is negative. Sort of evidence for early radiation i the lineage.  If splitting events concentrated at tips, `gamma` is >0.   
+Either of these mean that diversification rate is changing. +/- -1.645 (2 sd's away from zero- usually the negative version is more commonly tested for.)
+
+Incomplete taxon sampling is going to result in a negatively biased `gamma`. If there is incomplete sampling, how negative dows `gamma` need to be to reject null? `MCCR` (monte carlo constant rate) uses simulation to find out how much negative bias you would expect for some degree of incomplete sampling. Essentially just a null model thing
+
+Moleuclar phylogenies are always going to be biased by their lack of extinction information- so the problem of extinction rates will be real.  
+
+**Diversity Dependence methods**    
+It is very common to calculate diversification rates on recently evolving clades that are "unsustainable" in the long term. It does not seem reasonable to model changes in diversity over time with constant diversification rates.  
+
+We can kind of model this as a logistic growth towards a maximum diversity- spp richness is an equilibrial value.  Changing speciation rate or the 'species carrying capacity' can change the predicted equlibrium. At some point in these models, the number of species is no longer changing as a function of time- unlike in the pure birth or birth/death models.     
+
+--------------------------
+
+**Morphological evolution**    
+
+perhaps in theory morphological diversity and taxonomic diversity should be correlated- we usually draw taxonomy based on morphology. But even though taxonomic ranks above species are arbitrary, groups like "family" tend to be fairly insightful about the ecology of the group. But we can imagine that the two are decoupled- phenotypic differences within a clade might be relatively small in one clade and really dramatic in another. 
+
+We can look at the distribution of species in a morphospace and ask what kind of evolutionary history can lead to the observed patterns. But what traits to measure? We can get a lot of data (e.g. from CT scans) but what actually matters is a valid question- functional morphologists are out there who strive to identify characters for functional interpretation. One way is to just get a shedload of data, but in this case the story might be lost in the noise. 
+
+Some argue that adaptive raditions should be tested with morpho diversity, since the hypothesis is generally that lineages are diversifying into new niches. Mismatch between species diversity and morpho-dispersal of trilobites in Cambrian. 
+
+Science paper on convergence of ediocaran faunas from different localities.   
