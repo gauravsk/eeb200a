@@ -124,4 +124,70 @@ We can look at the distribution of species in a morphospace and ask what kind of
 
 Some argue that adaptive raditions should be tested with morpho diversity, since the hypothesis is generally that lineages are diversifying into new niches. Mismatch between species diversity and morpho-dispersal of trilobites in Cambrian. 
 
-Science paper on convergence of ediocaran faunas from different localities.   
+Science paper on convergence of ediocaran faunas from different localities.  
+---------------------------------------
+
+##  9 November 2015
+
+### Morphological character evolution 
+
+Friedman's work on morphospace over time- after the (K-Pg Event)[https://en.wikipedia.org/wiki/Cretaceous%E2%80%93Paleogene_extinction_event], the morphospace ends up being dominated by a clade (the (percomorphs)[http://tolweb.org/Percomorpha/52146]). The clade becomes more phenotypically diverse and more speciose. 
+
+The hypothesis of **ecological replacement of nonspiny ray predators by percomorph spiny rays** supported by fossil records. The expansion of percomorph morphospace was over the space occupied by the nonspiny rays
+
+Morphological and functional evolution- phenotypes and their emergent properties. Koehl's paper "When does morphology matter"- nonlinear relationship between morphology and functional.  
+
+How independent are dynamics of morphological and functional evolution?  
+
+Interesting biomechanical examples from fish. 
+
+Many-to-one mapping  
+
+--------
+
+Has morphology moved faster in some lineages than other? E.g. Family pomacentridae are reeffishes that are morphologically very similar to each other; labridae are very diverse morphologically  
+
+**BM evolution**   
+A continuous-time stochastic process- describes a random walk of evolution  
+`E[W(t)] == W(0)`- Expected trait value at a time is equal to starting balue.  
+successive time steps independent;   
+`W(t) == N(W(0) * \sigma^2*t)`  
+
+A two parameter model- `theta` is `W(0)`; `sigma` is the rate parameter. At the end of the model, the variance of the values is `f(t, sigma)`  
+
+A reasonable (?) way of describing changes in a trait when the trait is f(many independent changes). By the central limit theorem, no matter the distribution of underlying traits, a normal distribution comes out of many draws of the distribution. Demonstrating BM evolution of traits is consistent with genetic drift, or with constantly changing selection or weak selection, or random punctuated change.  
+
+Here the length of time that clades are evolving separately is the `t` parameter. 
+
+Jagged drops in disparity following divergence events because clade disparity drops immediately after speciation since it's the same morpho-variation over more species.  
+
+Phenotypic diversity was shown to be higher in a genus of fish that had a more diverse diets.  
+
+Does sampling from `N(0, sigma^s*t)` yield the same result as `N(trait at last split, sigma^s*t)`?  
+
+Covariation of species pairs is a function of the amount of shared time between two species.  This yields the phylo var/covar matrix.  
+
+```
+__              __
+| T1 + T2     T1 |
+|                |
+| T1      T1 + T3|
+--             --
+```
+
+We can get an ML estimate of the rate of evolution given a phylogeny and trait values for the tips.  Check in Omeara's papers  
+
+**Modified BM models**  
+Trends in trait values- mean of a BM walk can tend towards a given value- e.g. Cope's rule of model  
+
+The OU model assumes that there is a central tendency- strength of selection is proportional to distance of current trait to optimum value. 
+Variation is a function of the time in BM but not quite in the OU model.  
+I wonder how the optimum value is determined- a function of the tree branch lengths and distribution of the traits.  
+
+**Work through the biological reasoning behind OU**    
+
+Ecology of adaptive radiation- how does this X with community ecology? 
+
+AR == changes in rates of sppn and phenotypic variation. Divergence should be in response to Ecological Opporutnity (new environments showing up). The rate of diversification slows down with time as the ecological opportunity decreases. In other words, adaptive evolution is required. But a correlation is insufficient- too weak- a functional model connecting morphotraits to ecology is important. 
+
+Plethodon not an adaptive radiation.  
