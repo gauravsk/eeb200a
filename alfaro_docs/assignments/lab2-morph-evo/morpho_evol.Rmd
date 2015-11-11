@@ -1,0 +1,207 @@
+---
+title: "morpho diversification"
+author: "Gaurav Kandlikar"
+date: "November 9, 2015"
+output: html_document
+---
+
+### Simulating Browning Motion evolution
+
+We can simulate BM trait evolution by drawing random numbers from a normal distribution and generating their cumulative sum.
+```{r}
+library(geiger); library(wesanderson)
+num_generations <- 100
+displace <- rnorm(num_generations)
+
+traitvalue <- cumsum(displace)
+
+plot(traitvalue, lwd = 2, type = "l")
+```
+
+## Exercise 1
+
+Now let’s imagine we have 50 independent lineages that all start out with the same value of a continuous trait. If we let those 50 lineages evolve under Brownian motion (BM) what is the expected pattern of their trait values after 100 time units?
+
+> The expected value is 0 (starting value), with a variance proportional to the length of time.
+
+```{r exercise-1}
+num_lineages <- 50
+colors <- wes_palette("Zissou", n = num_lineages, type = "continuous")
+plot(cumsum(rnorm(100)), type="l", ylim=c(-30,30), ylab = "trait")
+for(i in 1:num_lineages) {lines(cumsum(rnorm(100)), col = colors[i])}
+```
+
+## Exercise 2
+
+Write an R block that plots Brownian evolution for 50 independent lineages for 50 time units side by side with BM for 100 time units. What is the effect of time on the diversity in trait values you see in those simulations? How does time affect diversity under BM?
+
+> The time of evolution impacts on the variance, and not the mean, of the final distribution. SD scales linearly with time, so that `Var(t) == sigma^2*t`; `SD(t) = sqrt(Var(t))`
+
+```{r exercise-2}
+num_lineages <- 50
+colors <- wes_palette("Darjeeling", n = num_lineages, type = "continuous")
+
+par(mar = c(5,4,4,2)+0.1)
+layout(matrix (c(1, 2, 2), 1, 2, byrow = T))
+# layout.show(n = 2)
+plot(cumsum(rnorm(50)), type="l", ylim=c(-30,30), ylab = "trait", main = "50 time steps", xlab = "time")
+for(i in 1:num_lineages) {lines(cumsum(rnorm(50)), col = colors[i])}
+
+par(mar = c(5, 0, 4, 2) + 0.1)
+plot(cumsum(rnorm(100)), type="l", ylim=c(-30,30), ylab = "trait", yaxt = "n", main = "100 time steps", xlab = "time")
+for(i in 1:num_lineages) {lines(cumsum(rnorm(100)), col = colors[i])}
+
+```
+
+### Varying rates of evolution
+
+
+```{r changing-sigma}
+colors <- wes_palette("Darjeeling", n = 2)
+par(mfrow = c(1,1), mar = c(5,4,4,2)+0.1)
+plot(cumsum(rnorm(100)), type="l", ylim=c(-80,80), ylab="Trait", col=colors[1])
+for(i in 1:20) lines(cumsum(rnorm(100)), col=colors[1])
+for(i in 1:20) lines(cumsum(rnorm(100, sd=5)), col=colors[2])
+legend("topleft", col = colors, legend = c("SD = 1", "SD = 5"), lwd = 2, bty = "n")
+```
+
+## Exercise 3  
+
+What is the rate parameter of Brownian motion? How does trait variance in a clade evolving under BM scale with rate?
+
+> There appears to be an exponential increase in population variance with sigma^2: 
+
+```{r exercise-3}
+sigmas <- seq(from = 1, to = 5, by = 0.25)
+
+timesteps <- 100
+variances <- numeric(length(sigmas))
+lineages <- seq(from = 1, to = 50)
+lineage_final <- numeric(length(lineages))
+
+plot(1, type = "n", xlim = c(1, max(sigmas)^2+1), ylim = c(0, 95000), xlab = bquote(sigma^2), ylab = "Variance in population after 50 generations")
+
+for(j in 1:50) {
+
+  # Crappy way to do this with a loop:
+  #   for (i in 1:length(sigmas)) {
+  #     lineage_final <- sapply(lineages, function(x) cumsum(rnorm(timesteps+1, sd = sigmas[i]^2))[timesteps+1])
+  #     variances[i] <- var(lineage_final)
+  #   }
+  
+  # Slicker way of doing this with an apply function
+  variances <- sapply(sigmas, function(x) var(sapply(lineages, function (y) cumsum(rnorm(timesteps+1, sd = x^2))[timesteps+1])))
+
+  lines(x = sigmas^2, y = variances, lwd = 1, lty = 3)
+}
+```
+
+
+### Simulating traits on trees
+
+See below that polar bears and grizzlies diverged from one another 1 MY ago while spectacled bears have evolved independently from that clade for 5 million years. Think about what this tree implies about the evolution of a continuous trait.    
+> This implies that Spectacled bears have had longer to evolve independently away from polar+grizzlybear- so the latter two should be fairly similar to one another, while the spectacled bear might be much different
+
+Node 4, the root of the tree, represents the common ancestor of all three bears. Let’s imagine we are interested in simulating the evolution of body size from this common ancestor. If the ancestral value was 250 kg we could simulate one outcome of BM from node 4 to spectacled bear by drawing one “walk” away with a step size that is determined by both the sigma^2 (the Brownian rate) and time. To get the correct standard deviation for multiple time steps at once we simple take the square root of the product of time X sigma^2. See the example below:
+
+```{r traits-on-trees-beaaaar}
+tree<-read.tree(text="((grizzlybear:1, polarbear:1):4, spectacledbear:5);")
+plot(tree)
+nodelabels()
+axisPhylo()
+
+rootMass <- 250 # size of ancestor
+sigmasq = 2.5 # Brownian rate
+time = 5 # 5 million years of independent evolution from the root
+sd <- sqrt(time * sigmasq) # Brownian evolution is proportional to rate X time)
+specbearDeltaMass <- rnorm(1, mean = 0, sd = sd)
+specbearMass <- rootMass + specbearDeltaMass
+specbearMass
+
+# Another way to do this using the tree structure itself to supply the time argument
+# Tree tip labels are numbered from top to bottom, so in our tree 
+# spectacled bear = 1, polarbear = 2, and grizzly = 3
+specbearDeltaMass<-rnorm(1, mean = 0, sd = sqrt(sigmasq*tree$edge.length[1])) 
+# NOTE: I am not sure this works- tree$edge.length[1] == 4, not 5 as it should be for specbear!
+specbearMass <- rootMass + specbearDeltaMass
+specbearMass
+```
+
+
+## Exercise 4. 
+Write a block of R code that simulate BM evolution for this three taxon tree. You can do this as a series of steps or write a general function.
+
+```{r exercise-4}
+
+# Trying to write a general function but not set on how to go about this best
+# simulate_trait <- function(phy, node_trait, bmrate) {
+#   # Simulate BM on each branch
+#   per_branch <- sapply(phy$edge.length, function(x) rnorm(1, mean = 0, sd = sqrt(bmrate*x)))
+# }
+
+specbearMass <- rootMass + rnorm(1, mean = 0, sd = sqrt(sigmasq*5))
+node5mass <- rootMass + rnorm(1, mean = 0, sd = sqrt(sigmasq*4))
+polarbearMass <- node5mass + rnorm(1, mean = 0, sd = sqrt(sigmasq*1))
+grizzlybearMass <- node5mass + rnorm(1, mean = 0, sd = sqrt(sigmasq*1))
+
+```
+
+## Trends in trait evolution
+
+What if we think that there has been a trend in the evolution of a trait? One way we could simulate this process is by saying that the mean of the normal distrbution is changing with time. We will do this by adding a new parameter to our model, mu. mu is going to shift the mean of the random normal distribution as a function of time (see the function below)
+
+```{r bmtrend-function}
+# a function that requires 
+# mu which is the trend parameter showing how the mean of the normal distribution changes over time, 
+# time the length of the simulation and stdev the standard deviation of the normal distribution, 
+# it assumes the starting ancestral trait value is 0
+
+bmtrend <- function(time, mu, stdev){ 
+  displace <- vector(length=time) 
+    for(i in 1:time){
+      # sample from rnorm with a mean with a mean of mu multiplied by the iteration
+      displace[i]<-rnorm(1, mean=mu*i, sd=stdev) 
+    }
+  traj<-cumsum(displace)   
+  return(traj) 
+}
+```
+
+Now we are going to run this bmtrend function 10 times using the replicate function, once with a mu of 0.02 and the other with mu=-0.02
+
+```{r using-bmtrend}
+par(mfrow = c(1,1))
+bmtrend0.02 <- replicate(10, bmtrend(100, 0.02, 1))
+bmtrendneg0.02 <- replicate(10, bmtrend(100, -0.02, 1))
+
+cols1 <- wes_palette("Darjeeling", n = 10, type = "continuous") 
+cols2 <- wes_palette("Rushmore", n = 10, type = "continuous") 
+ 
+plot(bmtrend0.02[,1], xlim=c(0,100), ylim=c(-150, 150), 
+     type="l", col=cols1[1], xlab="Time", ylab="Trait")
+for(i in 2:10) lines(bmtrend0.02[,i], col=cols1[i])
+for(i in 1:10) lines(bmtrendneg0.02[,i], col=cols2[i])
+```
+
+
+## Exercise 5.   
+Simulate 15 runs of a trend process for two groups of species: one with a mu of 0.5 and and the other with a mu of -0.5 for 100 MY. If you were to measure trait diversity in these groups at 100 only (in other words, if you did not knowm the true trait history) is there any information in those trait values that could distinguish evolution under a trend from regular Brownian evolution? Can you think of any additional information that would be helpful in distinguishing these models?
+
+> With only the trait values at the tip, we would not be able to determine whether the clade has evolved under a trended BM model or a neutral BM model, as the only factor distinguishing the two is the historical location of the distribution mean. Having an estimate of the trait value at the base of tree would give us a lot of confidence in determining the model of evolution in this group. 
+
+```{r exercise-5}
+bmtrend5 <- replicate(15, bmtrend(100, .5, 1))
+bmtrendneg5 <- replicate(15, bmtrend(100, -.5, 1))
+
+cols1 <- wes_palette("Darjeeling", n = 10, type = "continuous") 
+cols2 <- wes_palette("Rushmore", n = 10, type = "continuous") 
+ 
+plot(bmtrend5[,1], xlim = c(0,100), ylim = c(-2500, 2500), 
+     type = "l", col = cols1[1], xlab = "Time", ylab = "Trait",
+     main = "Simulating traits with mus of 0.5/-0.5")
+for(i in 2:10) lines(bmtrend5[,i], col = cols1[i])
+for(i in 1:10) lines(bmtrendneg5[,i], col = cols2[i])
+```
+
+## Simulating Orstein-Uhlenbeck trait evolution 
+
