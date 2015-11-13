@@ -95,7 +95,7 @@ Simulate 100 trees under a constant rate of birth and death. Extract the number 
 
 I will use `pbtree()` in `phytools` to make trees with constant birth death rates:
 ```{r exercise_2, cache = T}
-reps <- 1000
+reps <- 3
 num_tips <- numeric(reps)
 for (i in 1:reps) {
   tt <- pbtree(b = .5, d = .05, t = 12)
@@ -412,7 +412,7 @@ aics_bali
 sapply(aics_bali, function(x) x-(min(as.numeric(aics_bali))))
 ```
 
-The lowest AIC here is of the `pureBirth` model, but I am hesitant to conclude from this that the lineage has experienced this sort of speciation so far. In the morpho lab, a comment suggests that "# delata AIC or AICC scores >2 are ususally considered to provide positive support"- here, there are many models with dAIC < 2. So, pureBirth, birthDeath, and diversity-dependence all seem to be potentially viable explanations for diversification in this lineage. 
+The lowest AIC here is of the `pureBirth` model, but I am hesitant to conclude from this that the lineage has experienced this sort of speciation so far. In the morpho lab, a comment suggests that "delta AIC or AICC scores >2 are ususally considered to provide positive support"- here, there are many models with dAIC < 2. So, pureBirth, birthDeath, and diversity-dependence all seem to be potentially viable explanations for diversification in this lineage. 
 
 
 ```{r extra-exercise}
