@@ -2,13 +2,15 @@
 title: "EEB200a- Morphological evolution lab"
 author: "Gaurav Kandlikar"
 date: "November 9, 2015"
-output: pdf_document
+output: 
+  pdf_document:
+    fig_caption: yes
 ---
 
 ### Simulating Browning Motion evolution
 
 We can simulate BM trait evolution by drawing random numbers from a normal distribution and generating their cumulative sum.
-```{r}
+```{r, fig.cap="Trait trajectory under BM for 100 generations"}
 library(geiger); library(wesanderson)
 num_generations <- 100
 displace <- rnorm(num_generations)
@@ -25,7 +27,7 @@ Now let’s imagine we have 50 independent lineages that all start out with the 
 ### Exercise 1 response:
 > The expected value is 0 (starting value), with a variance proportional to the length of time.
 
-```{r exercise-1, cache = T}
+```{r exercise-1, cache = T, fig.cap = "Trait trajectories for 50 lineages"}
 num_lineages <- 50
 colors <- wes_palette("Zissou", n = num_lineages, type = "continuous")
 plot(cumsum(rnorm(100)), type="l", ylim=c(-30,30), ylab = "trait")
@@ -37,7 +39,7 @@ for(i in 1:num_lineages) {lines(cumsum(rnorm(100)), col = colors[i])}
 Write an R block that plots Brownian evolution for 50 independent lineages for 50 time units side by side with BM for 100 time units. What is the effect of time on the diversity in trait values you see in those simulations? How does time affect diversity under BM?
 
 ### Exercise 2 response: 
-```{r exercise-2, cache = T}
+```{r exercise-2, cache = T, fig.cap = "Trait trajectories over 50 and 100 generations"}
 num_lineages <- 50
 cols <- wes_palette("Darjeeling", n = num_lineages, type = "continuous")
 
@@ -56,7 +58,7 @@ for(i in 1:num_lineages) {lines(cumsum(rnorm(100)), col = cols[i])}
 
 To confirm, we can plot the variances in trait values of many lineages at each time step for two different values of sigma^2:
 
-```{r varaiance-over-time}
+```{r varaiance-over-time, fig.cap = "Trait variance is a function of time"}
 num_lineages <- 100
 generations <- 100
 
@@ -86,7 +88,7 @@ legend("topleft", col = cols, lty = c(1,1,2,2),
 
 ## Varying rates of evolution
 
-```{r changing-sigma, cache = T}
+```{r changing-sigma, cache = T, fig.cap = "Trait variance is a function of sigma (special case)"}
 cols <- wes_palette("Darjeeling", n = 2)
 par(mfrow = c(1,1), mar = c(5,4,4,2)+0.1)
 plot(cumsum(rnorm(100)), type="l", ylim=c(-80,80), ylab="Trait", col=cols[1])
@@ -102,7 +104,7 @@ What is the rate parameter of Brownian motion? How does trait variance in a clad
 ### Exercise 3 response:
 > There appears to be an exponential increase in population variance with sigma^2 (alternatively, a linear increase in the standard deviation with sigma^2). This is shown by calculating variance after 50 generations with varying values of sigma^2 for fifty lineages: 
 
-```{r exercise-3, cache = T}
+```{r exercise-3, cache = T, fig.cap = "Trait variance is a function of sigma (general case)"}
 sigmas <- seq(from = 1, to = 5, by = 0.25)
 
 timesteps <- 100
@@ -141,7 +143,7 @@ See below that polar bears and grizzlies diverged from one another 1 MY ago whil
 
 Node 4, the root of the tree, represents the common ancestor of all three bears. Let’s imagine we are interested in simulating the evolution of body size from this common ancestor. If the ancestral value was 250 kg we could simulate one outcome of BM from node 4 to spectacled bear by drawing one “walk” away with a step size that is determined by both the sigma^2 (the Brownian rate) and time. To get the correct standard deviation for multiple time steps at once we simple take the square root of the product of time X sigma^2. See the example below:
 
-```{r traits-on-trees-beaaaar, cache = T}
+```{r traits-on-trees-beaaaar, cache = T, fig.cap = "Toy phylogeny for trait simulation"}
 tree<-read.tree(text="((grizzlybear:1, polarbear:1):4, spectacledbear:5);")
 plot(tree)
 nodelabels()
@@ -184,7 +186,7 @@ grizzlybearMass <- node5mass + rnorm(1, mean = 0, sd = sqrt(sigmasq*1))
 ```
 We can plot these simulated traits onto a tree:
 
-```{r plot-traits-onto-beeeeaaaaaars}
+```{r plot-traits-onto-beeeeaaaaaars, fig.cap = "toy phylogeny with BM simulated traits"}
 plot(tree, adj = .25)
 tiplabels(text = round(c(polarbearMass, grizzlybearMass, specbearMass), 3), adj = 1)
 ```
@@ -212,7 +214,7 @@ bmtrend <- function(time, mu, stdev){
 
 Now we are going to run this bmtrend function 10 times using the replicate function, once with a mu of 0.02 and the other with mu=-0.02
 
-```{r using-bmtrend, cache = T}
+```{r using-bmtrend, cache = T, fig.cap = "Trended BM (Mean value changes)"}
 par(mfrow = c(1,1))
 bmtrend0.02 <- replicate(10, bmtrend(100, 0.02, 1))
 bmtrendneg0.02 <- replicate(10, bmtrend(100, -0.02, 1))
@@ -233,7 +235,7 @@ Simulate 15 runs of a trend process for two groups of species: one with a mu of 
 ### Exercise 5 response:
 > With only the trait values at the tip, we would not be able to determine whether the clade has evolved under a trended BM model or a neutral BM model, as the only factor distinguishing the two is the historical location of the distribution mean. Having an estimate of the trait value at the base of tree would give us a lot of confidence in determining the model of evolution in this group. 
 
-```{r exercise-5, cache = T}
+```{r exercise-5, cache = T, fig.cap = "Trait trajectories change with trends"}
 bmtrend5 <- replicate(15, bmtrend(100, .5, 1))
 bmtrendneg5 <- replicate(15, bmtrend(100, -.5, 1))
 
@@ -256,7 +258,7 @@ $dX_{t} = \alpha*\theta - X_{t} dt + \sigma dB_{t}$
 We will begin our invesitgation of OU by considering all lineages to be independent. Let’s assume that the ancestral value of the trait is 0, the optimum is 1, the pull towards the optima is 0.4 and sigma^2=0.05:
 
 
-```{r intro-to-OU, cache = T}
+```{r intro-to-OU, cache = T, fig.cap = "Trajectory of OU model changes with alpha"}
 theta <- 1 # Optimal value
 alpha <- 0.4 # Strength of pull to optimal value
 sigma <- 0.05 # Rate parameter
@@ -307,7 +309,6 @@ for(i in 1:ncol(trait_ou_outputs_lowalpha)) {
 }
 legend("bottomright", col = c(cols[10], cols2[8]), lty = 1, 
        legend = c("alpha = 0.4", "alpha = 0.005"), bty = "n")
-
 ```
 
 ## Exercise 6.  
@@ -316,7 +317,7 @@ Look at the plot you have just created. Describe the evolutionary trajectory of 
 ### Exercise 6 response:
 > For the first ~20 generations, the trajectory of the traits is dominated by a shift towards the optimum value of 1- the BM component of the model is not contributing very much to the trajectory. The lineages then start to drift around 1, but the variance in the trait does *not* increase with time, as we saw above in the pure BM model. 
 
-```{r exercise-6, cache = T}
+```{r exercise-6, cache = T, fig.cap = "BM is a special case of OU- alpha = 0"}
 theta <- 1 # Optimal value
 alpha <- 0.4 # Strength of pull to optimal value
 sigma <- 0.05 # Rate parameter
@@ -353,16 +354,11 @@ haem_tree <- read.tree("~/grad/courses/UCLA/eeb_200a_evolution/alfaro_docs/assig
 haem_dat <- read.csv("~/grad/courses/UCLA/eeb_200a_evolution/alfaro_docs/assignments/lab2-morph-evo/Haemulidae4models.csv", stringsAsFactors = FALSE)
 str(haem_dat)
 
-########################################################################
-# Adding this next chunk to make the tip values match the trait matrix #
-########################################################################
 rownames(haem_dat) <- haem_dat$taxon
-order <- match(haem_tree$tip.label, rownames(haem_dat))
-haem_dat <- haem_dat[,][order,]
-########################################################################
 
 trait <- haem_dat$Standard_Length
-names(trait) <- haem_tree$tip.label # Assigning the appropriate tip labels to the trait object
+names(trait) <- haem_dat$taxon
+# names(trait) <- haem_tree$tip.label # Assigning the appropriate tip labels to the trait object
 
 # Check that things are OK now:
 trait["Microlepidotus_brevipinnis"] == haem_dat["Microlepidotus_brevipinnis","Standard_Length"]
@@ -412,6 +408,8 @@ AK_weights
 
 Your assignment is to 1) choose buccal width or eye width as your trait 2) compare the fit of BM, OU, trend, and EB models using likelihood and AIC. The likelihood ratio test won’t be very useful here as you don’t have a nested hierachy of models. Report the likelihoods, AICcs, and delta AICs in a table (see Lab 1 for an example of how to extract and display these in an orderly way). What model or models fit your data best? Can you explain what the pattern of variation in your data set must be to support those fits? In other words, do you have any intuition for how clade trait diversity should scale with clade diversity for BM versus OU? How do these expectations differ for the trend model? We did not discuss the early burst model yet but you can read a brief description of the model using the help function. How should trait diveristy change through time under EB?
 
+**Note: see [Brian O'Meara's guide to AIC for details](http://brianomeara.info/tutorials/aic/). This is super informative. 
+
 > **BM** is the Brownian motion model (Felsenstein 1973), which assumes the correlation structure among trait values is proportional to the extent of shared ancestry for pairs of species. Default bounds on the rate parameter are sigsq=c(min=0,max=Inf). The same bounds are applied to all other models, which also estimate sigsq    
     **OU** is the Ornstein-Uhlenbeck model (Butler and King 2004), which fits a random walk with a central tendency with an attraction strength proportional to the parameter alpha. The OU model is called the hansen model in ouch, although the way the parameters are fit is slightly different here. Default bounds are alpha = c(min = 0, max = 150)     
     **EB** is the Early-burst model (Harmon et al. 2010) and also called the ACDC model (accelerating-decelerating; Blomberg et al. 2003). Set by the a rate parameter, EB fits a model where the rate of evolution increases or decreases exponentially through time, under the model r[t] = r[0] * exp(a * t), where r[0] is the initial rate, a is the rate change parameter, and t is time. The maximum bound is set to -0.000001, representing a decelerating rate of evolution. The minimum bound is set to log(10^-5)/depth of the tree.     
@@ -436,7 +434,12 @@ buccal_models [["trend"]] <- fitContinuous(haem_tree, buccal, model="trend", bou
 
 aiccs <- sapply(buccal_models, function(x) x$opt$aicc); round(aiccs,3)
 daiccs <- aiccs- min(aiccs); round(daiccs, 3)
+
+## AIC weights
+
+rel_L <- exp(-daiccs*0.5); rel_L
+AK_wts <- rel_L/(sum(rel_L)); AK_wts
 ```
 
 ### Exercise 7 response:
-> It appears that either the OU or the EB models are the best fit to the buccal width data- this makes a lot of sense given the description of EB. EB fits a model in which the rate of evolution changes exponentially through time. If the rate of evolution increases exponentially and then decreases exponentially, this would look very similar to an OU model with a large value of alpha. If alpha is large in OU, there is a really strong pull towards an optimal trait value, and as the optimum is reached, the rate of evolution slows until the trait oscillates around the optimum.
+> It appears that either the OU or the EB models are the best fit to the buccal width data- this makes a lot of sense given the description of EB. EB fits a model in which the rate of evolution changes exponentially through time. If the rate of trait evolution increases exponentially and then decreases exponentially, this would look very similar to an OU model with a large value of alpha (high variance at the beginning of the lineage, which decreases towards the present). If alpha is large in OU, there is a really strong pull towards an optimal trait value, and as the optimum is reached, the rate of evolution slows until the trait oscillates around the optimum.

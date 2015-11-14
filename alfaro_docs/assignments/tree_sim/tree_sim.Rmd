@@ -19,7 +19,9 @@ pars <- c(10, 0) # First lambda, then mu- these are the true parameters underlyi
 
 tt <- simulateTree(pars = pars, max.taxa = 100)
 
-plot(tt, show.tip.label = F, main = bquote(paste("True parameters: ", lambda == .(pars[1]), ", ", mu == .(pars[2]))))
+plot(tt, show.tip.label = F, 
+     main = bquote(paste("True parameters: ", lambda == .(pars[1]),
+                         ", ", mu == .(pars[2]))))
 ```
 
 We know the paramters underlying the birth-death process here, so we can check how well we can estimate them froom the tree. For this we use the `made.bd()` function of `diversitree`. This is the description:
@@ -95,7 +97,7 @@ Simulate 100 trees under a constant rate of birth and death. Extract the number 
 
 I will use `pbtree()` in `phytools` to make trees with constant birth death rates:
 ```{r exercise_2, cache = T}
-reps <- 3
+reps <- 1000
 num_tips <- numeric(reps)
 for (i in 1:reps) {
   tt <- pbtree(b = .5, d = .05, t = 12)
@@ -104,7 +106,7 @@ for (i in 1:reps) {
 par(mfrow = c(1,1))
 plot(density(num_tips), main = "Density of tip numbers", xlab = "Num tips")
 
-mean(num_tips); quantile(num_tips, c(0.025, 0.975))
+mean(num_tips); min(num_tips); max(num_tips); quantile(num_tips, c(0.025, 0.975))
 ```
 
 There is clearly a wide range of final number of species derived from the same underlying birth/death rates- here the range is from 0(!) to 1500. This means that the estimates of lambda and mu that we can calculate from a molecular phylogeny can in turn lead to a wide range of topologies. 
@@ -200,10 +202,16 @@ for(i in 1:reps) {
 
 }
 
-stripchart(as.data.frame(gammas), pch = 19, col = c ("blue", "red"), cex = 1.2, xlab = "Gamma")
+# stripchart(as.data.frame(gammas), pch = 19, col = c ("blue", "red"), cex = 1.2, xlab = "Gamma")
+
+plot(density(gammas[,1]), xlim = c(-5, 8), lwd = 2, 
+     main = "Density of gammas with/sans extinction")
+lines(density(gammas[,2]), lwd = 2, col = "darkred")
+legend("topright", col = c("black", "darkred"), lwd = 2, legend = c("no extinction", "extinction"), bty = "n")
 t.test(gammas[,1],gammas[,2])
 ```
-
+This is what is meant by [Fordyce et al. 2010](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2909265/) when he writes that:
+> The constant-rates test has little power to detect acceleration in diversification rates because it cannot discriminate between acceleration and a constant rate with extinction 
 
 ### Simulating trees under a density dependent model!
 
@@ -374,7 +382,7 @@ sapply(aics, function(x) x-(min(as.numeric(aics))))
 ```
  
 **What would you conclude from this table? How is this different from what you can say after the MCCR test?**   
-The dAIC scores above suggest that the ddl or ddx models (logistic or exponential density dependence) models best explain the data. This suggests that the clade underwent an early adaptive radiation- but we should be wary of drawing this conclusion from molecular data alone and should supplement this dataset with morphological, ecological, and physiological data from the snakes. Adaptive radiation only occurs when species are clearly moving towards unfilled fitness optima, which is not demonstrated by this data set. 
+The dAIC scores above suggest that the ddl or ddx models (logistic or exponential density dependence) models best explain the data. This suggests that the clade underwent an early adaptive radiation- but we should be wary of drawing this conclusion from molecular data alone and should supplement this dataset with morphological, ecological, and physiological data from the snakes. Adaptive radiation only occurs when species are clearly moving towards unfilled fitness optima, which is not demonstrated by this data set. After the MCCR test, 
 
 ## Exercise 6    
 
@@ -387,8 +395,8 @@ bali_times <- getBtimes("~/grad/courses/UCLA/eeb_200a_evolution/alfaro_docs/assi
 
 plot(bali_tree, show.tip.label = F)
 plotLtt(bali_times)
-age <- 42 # approximate age? from McCord & Westneat 2015
-richness <- length(bali_tree$tip.label)
+age <- 42 # approximate age? from McCord & Westneat 2015 
+richness <- length(bali_tree$tip.label) # (assuming complete sampling... )
 balibirth <- log(richness)/age; balibirth # this is to be lambda 
 abline(a = c(0, balibirth), lwd = 2, lty = 2) # check how well pure birth fits this
 
@@ -412,10 +420,10 @@ aics_bali
 sapply(aics_bali, function(x) x-(min(as.numeric(aics_bali))))
 ```
 
-The lowest AIC here is of the `pureBirth` model, but I am hesitant to conclude from this that the lineage has experienced this sort of speciation so far. In the morpho lab, a comment suggests that "delta AIC or AICC scores >2 are ususally considered to provide positive support"- here, there are many models with dAIC < 2. So, pureBirth, birthDeath, and diversity-dependence all seem to be potentially viable explanations for diversification in this lineage. 
+The lowest AIC here is of the `pureBirth` model, but I am hesitant to conclude from this that the lineage has experienced this sort of speciation so far. In the morpho lab, a comment suggests that "delta AIC or AICC scores >2 are ususally considered to provide positive support"- here, there are many models with dAIC < 2. So, pureBirth, birthDeath, and diversity-dependence all seem to be potentially viable explanations for diversification in this lineage. It would be nice to know how representative the taxon sampling in this phylogeny is relative to clade richness, and to know about the fossil record of this clade. 
 
 
-```{r extra-exercise}
+```{r extra-exercise, eval = F, echo = F}
 library(plyr); library(ggplot2); library(apTreeshape)
 numtrees <- 1000
 trees <- pbtree(n = 50, nsim = numtrees, ape = F)
