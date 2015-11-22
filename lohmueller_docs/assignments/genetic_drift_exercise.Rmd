@@ -246,7 +246,7 @@ N <- 10000
 rate <- 1/((2*N))
 coal_times <- rexp(reps, rate)
 
-mean(coal_times)
+# mean(coal_times)
 
 mu <- 1*10^-4
 num_snps <- numeric(reps)
@@ -265,12 +265,117 @@ mean(num_snps)
 \textsc{Recall that $\theta = 4N\mu$. Note, the factor-of-2-confusion—N refers to the number of diploids. So, $\theta$ is twice the number of chromosomes multiplied by mu. What is $\theta$ predicted to be in this example?}
 
 ```{r, cache = T}
-# Recall mu
-mu
-
-# Recall N
-N
+# Recall mu and N
+mu; N
 
 # Twice the number of chromosomes multiplied by mu
-theta <- 4*N*mu; theta
+theta <- 4*N*mu; theta; mean(num_snps)
+```
+
+\textsc{Pretty neat, huh?}
+
+Sure is!
+
+\textsc{Make a density plot of the number of SNPs per simulation replicate.}
+
+```{r}
+plot(density(num_snps), main = "Distribution of SNP count",
+     xlab = "SNP count")
+legend("topright", legend = c(bquote(mu == .(mu)), bquote(N == .(N))), bty = "n")
+```
+
+### Question 10 (sic)   
+\textsc{Repeat all the parts in question 8, but this time, set N=2,000.}
+
+```{r question-10}
+
+# Regenerate coal_times with 2N = 2000
+reps <- 10000
+N <- 1000
+
+rate <- 1/((2*N))
+coal_times_small <- rexp(reps, rate)
+
+mean(coal_times)
+
+mu <- 1*10^-4
+num_snps_small <- numeric(reps)
+for (i in 1:length(coal_times_small)) {
+  net_mutation_rate <- 2*mu*coal_times_small[i]
+  num_snps_small[i] <- rpois(1, net_mutation_rate)
+}
+
+mean(num_snps_small)
+theta <- 4*N*mu; theta; mean(num_snps_small)
+
+plot(density(num_snps_small), main = "Distribution of SNP count",
+     xlab = "SNP count")
+legend("topright", legend = c(bquote(mu == .(mu)), bquote(N == .(N))), bty = "n")
+```
+
+
+```{r question-11, cache = T}
+par(mfrow = c(1,2))
+plot(x = coal_times_small, y = num_snps_small, main = "SNPs v TMRCA", 
+     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated")
+mtext(side = 3, text = "N = 1000")
+plot(x = coal_times, y = num_snps, main = "SNPs v TMRCA", 
+     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated")
+mtext(side = 3, text = "N = 10000")
+```
+
+\textsc{How are these variables related to each other?}  
+
+Broadly, it appears that at sufficiently large population sizes, the number of SNPs is significantly correlated to the TMRCA. The linear relationship seems to get stronger with population size- below are the R^2 values for the two population size scenarios (I understand that I am breaking assumptions of normally distributed data, etc., given that this is count data... but this seems to be a decent first-cut?).  
+
+```{r}
+rsq_small_pop <- summary(lm(coal_times_small~num_snps_small))$adj.r.squared
+rsq_big_pop <- summary(lm(coal_times~num_snps))$adj.r.squared
+
+round(rsq_small_pop, 4); round(rsq_big_pop, 4)
+```
+
+\textsc{Does the number of SNPs tell you anything about the TMRCA?}
+
+If we have an estimate of SNP count in a population and a reliable model to relate SNPs to TMRCAs (having a good model requires a good estimate of mutation rate, which may not be readily available ubiquitously), we could reconstruct the demographic history of a population.  
+
+### Question 12   
+
+\textsc{Imagine that you sequenced a 10kb region of DNA from single individual (a diploid species; i.e. you have a sample of 2 chromosomes).  You observed 10 SNPs in that 10kb interval. Note that independent evidence suggests a mutation rate of 1 x 10-8 per base pair/generation. (Hint: this is very similar to what you’ve simulated)}
+
+\textsc{Use coalescent simulations to evaluate whether a model with N=10,000 is compatible with your observed data? Put another way, what proportion of simulation replicates from this model have >= 10 SNPs?}
+
+```{r}
+N <- 10000
+mu <- 1*10^-8
+bps <- 10000
+
+# Step 1: simulate times to coalescent ---------
+reps <- 10000
+rate <- 1/(2*N)
+
+coal_times_12 <- rexp(reps, rate)
+# Mean of simulation; Expected
+mean(coal_times_12); 2*N
+# SD of simulation; Expected
+sd(coal_times_12); 2*N
+
+# Step 2: simulate SNPs ------------
+
+num_snps_12 <- numeric(reps)
+
+for(i in 1:length(coal_times_12)) {
+  net_mutation_rate <- 2*bps*mu*coal_times_12[i]
+  num_snps_12[i] <- rpois(1, net_mutation_rate)
+}
+mean(num_snps_12)
+4*N*mu*bps
+
+# Plot
+par(mfrow = c(1,1))
+plot(density(num_snps_12), main = "Density of SNPs", xlab = "Num SNPs")
+abline(v = 10, lwd = 2)
+
+# Proportion of simulations compatible 
+sum(num_snps_12 >= 10)/length(num_snps_12)
 ```
