@@ -14,8 +14,6 @@ library(wesanderson)
 \textsc{What is the expected number of successes in a sample of size 10 from the binomial distribution with probability of success p=0.1?}    
 First, figure this out analytically based on the formulas from class. Second, write a simulation in R to confirm this.
 
-### Response to 1   
-
 $E[X] = np = 0.1 * 10 = 1$ 
 
 ```{r question-1, cache=T}
@@ -23,13 +21,15 @@ reps <- 10000
 n <- 10
 p <- 0.1
 
-table(rbinom(reps, n, p))
+rr <- rbinom(reps, n, p)
+table(rr)
+mean(rr)
 ```
 
-The simulations above show that the expected value of this is 1.
+The mean of 10000 randomly drawn results from a binomial distribution with $p = 0.1$ is ~0.1.
 
 
-### Using R to simulate genetic drift
+#### Using R to simulate genetic drift
 
 Consider that `p` is the allele frequency in the population; `N` is the number of diploid individuals. 
 
@@ -45,7 +45,7 @@ count/(2*N)
 \textsc{Write a function in R that will simulate T generations of genetic drift for L independent SNPs. Keep track of the allele frequencies of each of the L SNPs in each of the T generations. All SNPs should start in the initial generation at frequency p.}
 
 ```{r question-2, cache=T}
-gene_frequencies <- function(num_generations = 10, init_freq = 0.1, num_genes = 3, pop_size = 100) {
+gene_frequencies <- function(num_generations = 1000, init_freq = 0.1, num_genes = 3, pop_size = 1000) {
   
   full_matrix <- matrix(nrow = num_generations, ncol = num_genes)
   full_matrix[1, ] <- rep(init_freq, num_genes)
@@ -59,17 +59,27 @@ gene_frequencies <- function(num_generations = 10, init_freq = 0.1, num_genes = 
   return(full_matrix)
   
 }
+```
 
+### Question 3    
+
+\textsc{Use the function that you just wrote to simulate drift with the following parameters: N=100, L=1000, T=10000, p=0.1}
+
+
+```{r question-3-a, cache = T}
 freqs <- gene_frequencies(num_generations = 10000, init_freq = 0.1, num_genes = 1000, pop_size = 100)
+```
 
-# How many of the 1000 SNP are at frequency 0/1 at the end of the simulation (in generation 10000)?
+\textsc{How many of the 1000 SNP are at frequency 0 at the end of the simulation (in generation 10000)? How many are at frequency 1?}
+```{r question-3-b-c}
 table(freqs[nrow(freqs),])
 ```
 
-\textsc{Does this value agree with the theoretical prediction for the probability of fixation of a neutral allele?}
+\textsc{Does this value agree with the theoretical prediction for the probability of fixation of a neutral allele?}    
 As shown above, ~900 of the SNPs were at frequency of zero at the end of the simulation; ~100 were at fixation. This lines up with expectation, which is that the likelihood of fixation is equal to the initial frequency of a neutral SNP. 
 
-```{r question-2-, cache=T}
+\textsc{Make a plot of the allele frequency trajectories for 100 of the SNPs.}
+```{r question-3-d, cache=T}
 cols <- wes_palette("Darjeeling", n = 1000, "continuous")
 plot(freqs[,1], type = "l", ylim = c(-0.05, 1.05), xlab = "generation", ylab = "allele frequency",
      main = "Trajectory of allele frequency", col  = cols[1])
@@ -78,7 +88,7 @@ invisible(sapply(2:ncol(freqs), function(x) lines(freqs[,x], col = cols[x])))
 
 \textsc{Repeat the simulation, but this time set p=0.6} 
 
-```{r, cache=T}
+```{r question-3-e-g, cache=T}
 freqs <- gene_frequencies(num_generations = 10000, init_freq = 0.6, num_genes = 1000, pop_size = 100)
 
 # How many of the 1000 SNP are at frequency 0/1 at the end of the simulation (in generation 10000)? 
@@ -92,9 +102,8 @@ Yes- the probability of fixation of a neutral allele is equal to its initial fre
 
 \textsc{Let’s look at the effect of the population size on patterns of genetic drift. Repeat the simulation, but this time, set N=10, 500 and 1000.  Keep the other parameters the same (p=0.1; L=1000; T=10000). Again, N is the number of diploids.}
 
-```{r fig.height=8, fig.width=10, cache=T}
+```{r question-4-a ,fig.height=8, fig.width=10, cache=T}
 pop_sizes <- c(10, 100, 500, 1000)
-# pop_sizes <- c(10)
 frequencies_by_size <- lapply(pop_sizes, function(x)
   gene_frequencies(num_generations = 10000, init_freq = 0.1, num_genes = 1000, pop_size = x))
 
@@ -128,7 +137,7 @@ sapply(frequencies_by_size, prop_fixed)
 
 As seen above, the proportion of replicates that went to fixation was about the expected value of 0.1 regardless of the population size. Another interesting way to explore this question would be plot the proportion of fixed sites as a function of time- I would expect that alleles go to fixation much faster in the small populations:
 
-```{r prop-alleles-fixed-v-time, cache = T}
+```{r question-4-d-2, cache = T}
 prop_fixed_by_time <- function(x){
   
   vv <- numeric(nrow(x))
@@ -160,8 +169,6 @@ $$V[p_{t+1}] = \frac{p_{t}*(1-p_{t})}{2N}$$
 The equation for variance shows that the variance i $p$ decreases with population size, so we expect the allele frequencies to show more drastic shifts in small populations than in large ones. 
 
 
-## Coalescence
-
 ### Exploring the exponential distribution
 
 
@@ -180,20 +187,19 @@ The rate of coalescence for two chromosomes in a population of size 2N is $\frac
 ### Question 6   
 
 \textsc{Perform 10,000 simulations of coalescent times for a sample size of 2 chromosomes from this population of size 2N=20,000.} 
-```{r question-6-a, cache = T}
+
+\textsc{a) What is the average time to the most recent common ancestor (TMRCA) in your simulations? b) What is the theoretical expectation?}
+```{r question-6-a-b, cache = T}
 reps <- 10000
 N <- 10000
 
 rate <- 1/((2*N))
 coal_times <- rexp(reps, rate)
-# for(i in 1:length(coal_times)) {
-# coal_times[i] <- mean(rexp(2, rate))
-# }
 
 2*N ; mean(coal_times)
 ```
 
-\textsc{What is the average time to the most recent common ancestor (TMRCA) in your simulations? b) What is the theoretical expectation? c) How do the two values compare?}
+\textsc{How do the two values compare?}
 
 As shown above, the average time to MRCA in the simulations is ~20000. The theoretical expectation for coalescence time is $2N$ = 20000 generations. 
 
@@ -237,7 +243,7 @@ This exercise shows that the expected time to coalescent grows linearly with the
 
 \textsc{Let’s add mutations to the genealogies you’ve simulated and then look at what these models predict in terms of the genetic variation you might see in a sample. Set mu = 1 x 10-4}
 
-\textsc{Add mutations to the genealogies (really the coalescent times) that you simulated in question 6 (N=20,000) using the algorithm I just outlined}
+\textsc{a) Add mutations to the genealogies (really the coalescent times) that you simulated in question 6 (N=20,000) using the algorithm I just outlined}
 ```{r question-8-a, cache = T}
 # Regenerate coal_times with 2N = 20000
 reps <- 10000
@@ -256,15 +262,15 @@ for (i in 1:length(coal_times)) {
 }
 ```
 
-\textsc{What is the average number of SNPs per geneology}    
+\textsc{b) What is the average number of SNPs per geneology}    
 
-```{r, cache = T}
+```{r question-8-b, cache = T}
 mean(num_snps)
 ```
 
-\textsc{Recall that $\theta = 4N\mu$. Note, the factor-of-2-confusion—N refers to the number of diploids. So, $\theta$ is twice the number of chromosomes multiplied by mu. What is $\theta$ predicted to be in this example?}
+\textsc{c) Recall that $\theta = 4N\mu$. Note, the factor-of-2-confusion—N refers to the number of diploids. So, $\theta$ is twice the number of chromosomes multiplied by mu. What is $\theta$ predicted to be in this example? d) How does the value of $\theta$ compare to the average number of SNPs seen in the simulations?}
 
-```{r, cache = T}
+```{r question-8-c, cache = T}
 # Recall mu and N
 mu; N
 
@@ -272,13 +278,13 @@ mu; N
 theta <- 4*N*mu; theta; mean(num_snps)
 ```
 
-\textsc{Pretty neat, huh?}
+\textsc{e) Pretty neat, huh?}
 
 Sure is!
 
-\textsc{Make a density plot of the number of SNPs per simulation replicate.}
+\textsc{f) Make a density plot of the number of SNPs per simulation replicate.}
 
-```{r}
+```{r question-8-e}
 plot(density(num_snps), main = "Distribution of SNP count",
      xlab = "SNP count")
 legend("topright", legend = c(bquote(mu == .(mu)), bquote(N == .(N))), bty = "n")
@@ -288,7 +294,6 @@ legend("topright", legend = c(bquote(mu == .(mu)), bquote(N == .(N))), bty = "n"
 \textsc{Repeat all the parts in question 8, but this time, set N=2,000.}
 
 ```{r question-10}
-
 # Regenerate coal_times with 2N = 2000
 reps <- 10000
 N <- 1000
@@ -313,14 +318,21 @@ plot(density(num_snps_small), main = "Distribution of SNP count",
 legend("topright", legend = c(bquote(mu == .(mu)), bquote(N == .(N))), bty = "n")
 ```
 
+Again, $4*N*\mu = Num SNPs observed$. As the $N$ is smaller here than in the previous question, the lineages on average have fewer SNPs after the same number of generations. 
 
-```{r question-11, cache = T}
+
+### Question 11    
+
+\textsc{Make a scatter plot of the number of SNPs seen in each simulation replicate vs. the TMRCA for that simulation replicate}   
+
+```{r question-11-a, cache = T}
 par(mfrow = c(1,2))
+color <- rgb(0,0,0,alpha=0.1) 
 plot(x = coal_times_small, y = num_snps_small, main = "SNPs v TMRCA", 
-     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated")
+     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated", pch = 19, col = color)
 mtext(side = 3, text = "N = 1000")
 plot(x = coal_times, y = num_snps, main = "SNPs v TMRCA", 
-     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated")
+     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated", pch = 19, col = color)
 mtext(side = 3, text = "N = 10000")
 ```
 
@@ -328,7 +340,7 @@ mtext(side = 3, text = "N = 10000")
 
 Broadly, it appears that at sufficiently large population sizes, the number of SNPs is significantly correlated to the TMRCA. The linear relationship seems to get stronger with population size- below are the R^2 values for the two population size scenarios (I understand that I am breaking assumptions of normally distributed data, etc., given that this is count data... but this seems to be a decent first-cut?).  
 
-```{r}
+```{r question-11-b, cache = T}
 rsq_small_pop <- summary(lm(coal_times_small~num_snps_small))$adj.r.squared
 rsq_big_pop <- summary(lm(coal_times~num_snps))$adj.r.squared
 
@@ -345,7 +357,7 @@ If we have an estimate of SNP count in a population and a reliable model to rela
 
 \textsc{Use coalescent simulations to evaluate whether a model with N=10,000 is compatible with your observed data? Put another way, what proportion of simulation replicates from this model have >= 10 SNPs?}
 
-```{r}
+```{r question-12-a}
 N <- 10000
 mu <- 1*10^-8
 bps <- 10000
@@ -358,7 +370,7 @@ coal_times_12 <- rexp(reps, rate)
 # Mean of simulation; Expected
 mean(coal_times_12); 2*N
 # SD of simulation; Expected
-sd(coal_times_12); 2*N
+# sd(coal_times_12); 2*N
 
 # Step 2: simulate SNPs ------------
 
@@ -368,14 +380,57 @@ for(i in 1:length(coal_times_12)) {
   net_mutation_rate <- 2*bps*mu*coal_times_12[i]
   num_snps_12[i] <- rpois(1, net_mutation_rate)
 }
-mean(num_snps_12)
-4*N*mu*bps
+
+# mean(num_snps_12); 4*N*mu*bps
 
 # Plot
 par(mfrow = c(1,1))
 plot(density(num_snps_12), main = "Density of SNPs", xlab = "Num SNPs")
+mtext(side = 3, text = "N = 10000")
 abline(v = 10, lwd = 2)
 
 # Proportion of simulations compatible 
 sum(num_snps_12 >= 10)/length(num_snps_12)
 ```
+
+When $N = 10000$, ~10% of the simulations yield >= 10 SNPs. 
+
+\textsc{ Is the model with N=1,000 compatible with your observed data? What is the proportion of simulation replicates that have >= 10 SNPs?}
+
+```{r question-12-b, cache = T}
+N <- 1000
+mu <- 1*10^-8
+bps <- 10000
+
+# Step 1: simulate times to coalescent ---------
+reps <- 10000
+rate <- 1/(2*N)
+
+coal_times_12 <- rexp(reps, rate)
+# Mean of simulation; Expected
+mean(coal_times_12); 2*N
+# SD of simulation; Expected
+# sd(coal_times_12); 2*N
+
+# Step 2: simulate SNPs ------------
+
+num_snps_12 <- numeric(reps)
+
+for(i in 1:length(coal_times_12)) {
+  net_mutation_rate <- 2*bps*mu*coal_times_12[i]
+  num_snps_12[i] <- rpois(1, net_mutation_rate)
+}
+
+# mean(num_snps_12); 4*N*mu*bps
+
+# Plot
+par(mfrow = c(1,1))
+plot(density(num_snps_12), main = "Density of SNPs", xlab = "Num SNPs")
+mtext(side = 3, text = "N = 1000")
+abline(v = 10, lwd = 2)
+
+# Proportion of simulations compatible 
+sum(num_snps_12 >= 10)/length(num_snps_12)
+```
+
+In 10000 replicate lineages of $N = 1000$, no lineage accumulated >= 10 SNPs. The simple model presented here is not compatible with the proposed population size. 
