@@ -1,0 +1,140 @@
+---
+title: "Approximate Bayesian Computation exercise"
+author: "Gaurav Kandlikar"
+date: "November 23, 2015"
+output: pdf_document
+---
+
+## Estimation of population size
+
+Imagine that you resequenced a 100kb region of two Y chromosomes, which are non-recombining. You observe 50 SNPs within this region. You would like to use this dataset to estimate the effective population size of males. You know that the mutation rate per base pair on the Y chromosome is $\mu = 1e^{-8}$ per generation.  
+
+Let's develop an ABC approach to this:
+
+
+### Question 1
+
+
+\textsc{Assume that $N$ can be any value between 100 and 100000. Draw 1 million values from the prior distribution of $N$, assuming $N~[100, 100000]$}  
+
+```{r question-1-a, cache = T}
+# Draw Ns from distribution --------
+reps <- 1e6
+min = 100; max = 100000
+N <- runif(reps, min, max)
+# Mean should be min+max/2
+(min+max)/2; mean(N)
+```
+
+\textsc{For each value of N, simulate a TMRCA.}
+
+```{r question-1-b, cache = T}
+# Generate coalescent times ---------
+rates <- 1/(N) # Only 1 Y chromosome in males...
+coal_times <- rexp(reps, rates)
+# Mean should be the same as mean(N)
+mean(coal_times)
+```
+
+\textsc{For each TMRCA, add a Poisson distributed number of mutations}
+
+```{r question-1-c, cache = T}
+# Generate SNPs -----------
+mu <- 1e-8
+bps <- 100000
+net_mutation_rates <- 2*mu*bps*coal_times
+num_snps <- rpois(reps, net_mutation_rates)
+# Mean should be approx 2Nu
+mean(2*(N)*mu*bps); mean(num_snps)
+```
+
+\textsc{We now need to decide which of the million draws from the priors to accept i.e. which are "close enough". Here, close enough is defined as "between 45 and 55"}
+
+```{r question-1-d, cache = T}
+lineages <- cbind(N, coal_times, num_snps)
+
+# Subset to the draws of N that gave rise to 45-55 SNPs
+accept <- subset(lineages, lineages[,3] < 56 & lineages[,3] > 44)
+
+# Make sure it worked
+min(accept[,3]); max(accept[,3])
+
+# Proportion of samples we keep 
+nrow(accept)/reps
+```
+
+### Question 2 
+
+\textsc{Make a density plot of the prior and the posterior.}  
+
+```{r question-2, cache = T}
+# Plot
+plot(density(N), lwd = 2, ylim = c(0, 0.000015), main = "Distribution of Ns", xlab = "Population size")
+lines(density(accept[,1]), col = "darkred", lwd = 2)
+legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), bty = "n", lwd = 2)
+```
+
+### Question 3 and 4
+
+\textsc{What is the median value of the posterior distribution of N? Generate a 95 credible interval for the posterior distribution of N} 
+
+
+```{r question-3-4}
+# Metrics on accepted Ns
+med <- median(accept[,1]); med
+quantile(accept[,1], c(0.025, 0.975))
+```
+
+
+### Question 5  
+
+\textsc{How does the posterior distribution differ from the prior distribution?}    
+
+The posterior distribution of $N$ is narrower than the uniform prior from which $Ns$ were originally drawn. The posterior is centered around the median above with a 95% credible interval from ~9800 to ~97000.   
+
+
+### Question 6
+
+\textsc{Repeat the ABC analysis with $N~[1000, 100000]$}
+
+```{r question-6, results="hold"}
+# Draw Ns from distribution --------
+reps <- 1e6
+min = 1000; max = 100000
+N <- runif(reps, min, max)
+# Mean should be min+max/2
+print("Expected and real Mean N");(min+max)/2; mean(N)
+# Generate coalescent times ---------
+rates <- 1/(N) # Only 1 Y chromosome in males...
+coal_times <- rexp(reps, rates)
+# Mean should be the same as mean(N)
+print("Mean coal time"); mean(coal_times)
+# Generate SNPs -----------
+mu <- 1e-8
+bps <- 100000
+net_mutation_rates <- 2*mu*bps*coal_times
+num_snps <- rpois(reps, net_mutation_rates)
+# Mean should be approx 2Nu
+print("Expected and real mean Num SNPs");mean(2*(N)*mu*bps); mean(num_snps)
+lineages <- cbind(N, coal_times, num_snps)
+
+# Subset to the draws of N that gave rise to 45-55 SNPs
+accept <- subset(lineages, lineages[,3] < 56 & lineages[,3] > 44)
+
+# Make sure it worked
+print("Min and Max SNPs in accepts");min(accept[,3]); max(accept[,3])
+
+# Proportion of samples we keep 
+print("Proportion of samples accepted");nrow(accept)/reps
+
+# Plot
+plot(density(N), lwd = 2, ylim = c(0, 0.000015), main = "Distribution of Ns", xlab = "Population size")
+lines(density(accept[,1]), col = "darkred", lwd = 2)
+legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
+       bty = "n", lwd = 2)
+
+# Metrics on accepted Ns
+print("Median value of accept"); med <- median(accept[,1]); med
+print("95 CI of median"); quantile(accept[,1], c(0.025, 0.975))
+
+```
