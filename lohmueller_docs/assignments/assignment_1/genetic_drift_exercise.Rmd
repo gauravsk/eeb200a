@@ -1,5 +1,5 @@
 ---
-title: "Genetic Drift"
+title: "Genetic Drift and the Coalescent"
 author: "Gaurav Kandlikar"
 date: "November 20, 2015"
 output: pdf_document
@@ -17,7 +17,7 @@ library(wesanderson)
 
 \textsc{First, figure this out analytically based on the formulas from class.} 
 
-$E[X] = np = 0.1 * 10 = 1$ 
+$$E[X] = np = 0.1 * 10 = 1$$ 
 
 \textsc{Second, write a simulation in R to confirm this.}
 ```{r question-1, cache=T}
@@ -27,21 +27,21 @@ p <- 0.1
 
 rr <- rbinom(reps, n, p)
 table(rr)
-mean(rr)/n
+mean(rr)
 ```
 
-The mean of 10000 randomly drawn results from a binomial distribution with $p = 0.1$ is ~0.1.
+The mean of 10000 randomly drawn samples of size 10 from a binomial distribution with $p = 0.1$ is ~1.
 
 
-#### Using R to simulate genetic drift     
-
+#### Using R to simulate genetic drift      
+    
 Consider that `p` is the allele frequency in the population; `N` is the number of diploid individuals. 
 
 ```{r genetic-drift-1, cache=T}
 p <- 0.1
 N <- 10
 count <- rbinom(1, 2*N, p)
-t2_freq <- round(count/(2*N), 3)
+t2_freq <- round(count/(2*N), 3); t2_freq
 ```
 The frequency of the allele has shifted from $p_{i}$ to `r t2_freq`
 
@@ -65,16 +65,15 @@ gene_frequencies <- function(num_generations = 1000, init_freq = 0.1, num_genes 
 
 ### Question 3    
 
-\textsc{Use the function that you just wrote to simulate drift with the following parameters: N=100, L=1000, T=10000, p=0.1}
-
+\textsc{a) Use the function that you just wrote to simulate drift with the following parameters: N=100, L=1000, T=10000, p=0.1}
 
 ```{r question-3-a, cache = T}
 freqs <- gene_frequencies(num_generations = 10000, init_freq = 0.1, num_genes = 1000, pop_size = 100)
 ```
 
-\textsc{a) How many of the 1000 SNP are at frequency 0 at the end of the simulation (in generation 10000)? b) How many are at frequency 1?}
+\textsc{b) How many of the 1000 SNP are at frequency 0 at the end of the simulation (in generation 10000)? c) How many are at frequency 1?}
 
-Table the last row of the output matrix: 
+Table the last row of the output matrix:  
 ```{r question-3-b-c}
 table(freqs[nrow(freqs),])
 ```
@@ -84,7 +83,9 @@ table(freqs[nrow(freqs),])
 \textsc{Does this value agree with the theoretical prediction for the probability of fixation of a neutral allele?}    
 The result above agrees with the expectation that the $p(fixation) = p_{i}$. 
 
-\textsc{Make a plot of the allele frequency trajectories for 100 of the SNPs.}
+\clearpage 
+
+\textsc{d) Make a plot of the allele frequency trajectories for 100 of the SNPs.}
 ```{r question-3-d, cache=T}
 cols <- wes_palette("Darjeeling", n = 100, "continuous")
 matplot(freqs[,1:100], type = "l", lty = 1, col = cols, main = "Trajectory of allele frequency", 
@@ -92,7 +93,7 @@ matplot(freqs[,1:100], type = "l", lty = 1, col = cols, main = "Trajectory of al
 
 ```
 
-\textsc{Repeat the simulation, but this time set p=0.6} 
+\textsc{e) Repeat the simulation, but this time set p=0.6} 
 
 ```{r question-3-e-g, cache=T}
 freqs <- gene_frequencies(num_generations = 10000, init_freq = 0.6, num_genes = 1000, pop_size = 100)
@@ -103,7 +104,7 @@ table(freqs[nrow(freqs),])
 
 About 600 of the SNPs went to fixation; the remaining ~400 were lost from the population.  
 
-\textsc{Does this value agree with the theoretical prediction for the probability of fixation of a neutral allele?}  
+\textsc{f) Does this value agree with the theoretical prediction for the probability of fixation of a neutral allele?}  
 Yes- the probability of fixation of a neutral allele is equal to its initial frequency in the population, which in this case is 0.6.
 
 \clearpage
@@ -131,11 +132,11 @@ title("Trajectory of allele frequency", outer = T)
 
 ```
 
-\textsc{Based on examination of the plots, how does the population size affect allele frequency change?}     
+\textsc{c) Based on examination of the plots, how does the population size affect allele frequency change?}     
 
 Alleles seem to become fixed or extinct in a small population much faster than in a large population. 
 
-\textsc{For each population size, in what proportion of simulation replicates did the derived allele become fixed by the end of the simulation?}
+\textsc{d) For each population size, in what proportion of simulation replicates did the derived allele become fixed by the end of the simulation?}
 
 ```{r question-4-d, cache = T}
 prop_fixed <- function(x) {
@@ -170,11 +171,11 @@ legend("bottomright", lty = 1, col = cols, legend = c("N = 10", "N = 100", "N = 
 ```
 
 \clearpage
-\textsc{How does this probability of fixation estimated from the simulations match with the theoretical prediction?}    
+\textsc{e) How does this probability of fixation estimated from the simulations match with the theoretical prediction?}    
 
 Even though the expected value of $p$ is equal regardless of the population size, theory tells us that the variance in $p$ does indeed depend on $N$. In other words,  
 
-$$E[p_{t+1}] = p_{t}$$,
+$$E[p_{t+1}] = p_{t}$$
 $$V[p_{t+1}] = \frac{p_{t}*(1-p_{t})}{2N}$$
 
 The equation for variance shows that the variance of $p_{t}$ decreases with increasing population size, so we expect the allele frequencies to show more drastic shifts in small populations than in large ones. 
@@ -209,16 +210,16 @@ coal_times <- rexp(reps, rate)
 2*N ; mean(coal_times)
 ```
 
-\textsc{How do the two values compare?}
+\textsc{c) How do the two values compare?}
 
 As shown above, the average time to MRCA in the simulations is ~20000. The theoretical expectation for coalescence time is $2N$ = 20000 generations. 
 
-\textsc{Make a density plot of your simulated coalescent times.}
+\textsc{d) Make a density plot of your simulated coalescent times.}
 ```{r question-6-d}
-plot(density(coal_times), main = "Distribution of TMRCAs", xlab = "generations")
+plot(density(coal_times), main = "Distribution of TMRCAs (2N = 20000)", xlab = "generations")
 ```
 
-\textsc{What is the standard deviation of the coalescent times?}
+\textsc{e) What is the standard deviation of the coalescent times?}
 ```{r question-6-e}
 sd(coal_times)
 ```
@@ -240,16 +241,19 @@ coal_times <- rexp(reps, rate)
 # Expected average; true average; standard deviation
 2*N ; mean(coal_times); sd(coal_times)
 
-# Density plot
+# Mean and SD match expecations of 2N
+
+
+# Density plot:
 plot(density(coal_times), main = "Distribution of TMRCAs (2N = 2000)",
      xlab = "generations")
 ```
 
-\textsc{How does the average TMRCA from the simulations in question 6 (where 2N=20,000) compare to the average TMRCA from the simulations in question 7 (2N=2,000)}  
+\textsc{b) How does the average TMRCA from the simulations in question 6 (where 2N=20,000) compare to the average TMRCA from the simulations in question 7 (2N=2,000)}  
 
 The TMRCA in the 2N = 2000 population is ~2000 generations, while it is ~20000 generations in the 2N = 20000 population. 
 
-\textsc{What can you conclude about how the population size affects the expected coalescent time? }  
+\textsc{c) What can you conclude about how the population size affects the expected coalescent time? }  
 
 This exercise shows that the expected time to coalescent grows linearly with the number of chromosomes in the population. 
 
@@ -269,11 +273,6 @@ coal_times <- rexp(reps, rate)
 # mean(coal_times)
 
 mu <- 1*10^-4
-# num_snps <- numeric(reps)
-# for (i in 1:length(coal_times)) {
-#   net_mutation_rate <- 2*mu*coal_times[i]
-#   num_snps[i] <- rpois(1, net_mutation_rate)
-# }
 
 net_mutation_rate <- 2*mu*coal_times
 num_snps <- rpois(length(coal_times), net_mutation_rate)
@@ -286,7 +285,7 @@ num_snps <- rpois(length(coal_times), net_mutation_rate)
 mean(num_snps)
 ```
 
-\textsc{c) Recall that $\theta = 4N\mu$. Note, the factor-of-2-confusion—N refers to the number of diploids. So, $\theta$ is twice the number of chromosomes multiplied by mu. What is $\theta$ predicted to be in this example? d) How does the value of $\theta$ compare to the average number of SNPs seen in the simulations?}
+\textsc{c) Recall that $\theta = 4N\mu$. Note, the factor-of-2-confusion: N refers to the number of diploids. So, $\theta$ is twice the number of chromosomes multiplied by mu. What is $\theta$ predicted to be in this example? d) How does the value of $\theta$ compare to the average number of SNPs seen in the simulations?}
 
 ```{r question-8-c, cache = T}
 # Recall mu and N
@@ -301,7 +300,7 @@ theta; mean(num_snps)
 
 \textsc{e) Pretty neat, huh?}
 
-Sure is!
+***Sure is!***
 
 \textsc{f) Make a density plot of the number of SNPs per simulation replicate.}
 
@@ -314,7 +313,7 @@ legend("topright", legend = c(bquote(mu == .(mu)), bquote(N == .(N))), bty = "n"
 \clearpage
 
 ### Question 10 (sic)    
-\textsc{Repeat all the parts in question 8, but this time, set N=2,000.}
+\textsc{Repeat all the parts in question 8, but this time, set N = 2,000.}
 
 ```{r question-10}
 # Regenerate coal_times with 2N = 2000
@@ -345,20 +344,21 @@ Again, $4N \mu$ = Num SNPs observed. As the $N$ is smaller here than in the prev
 
 ### Question 11    
 
-\textsc{Make a scatter plot of the number of SNPs seen in each simulation replicate vs. the TMRCA for that simulation replicate}   
+\textsc{a) Make a scatter plot of the number of SNPs seen in each simulation replicate vs. the TMRCA for that simulation replicate}   
 
 ```{r question-11-a, cache = T}
-par(mfrow = c(1,2))
+par(mfrow = c(1,2), oma = c(0,0,1,0))
 color <- rgb(0,0,0,alpha=0.1) 
-plot(x = coal_times_small, y = num_snps_small, main = "SNPs v TMRCA", 
-     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated", pch = 19, col = color)
+plot(x = coal_times_small, y = num_snps_small, xlab = "Time to coalescence", 
+     ylab = "Number of SNPs accumulated", pch = 19, col = color)
 mtext(side = 3, text = "N = 1000")
-plot(x = coal_times, y = num_snps, main = "SNPs v TMRCA", 
-     xlab = "Time to coalescence", ylab = "Number of SNPs accumulated", pch = 19, col = color)
+plot(x = coal_times, y = num_snps, xlab = "Time to coalescence", 
+     ylab = "Number of SNPs accumulated", pch = 19, col = color)
 mtext(side = 3, text = "N = 10000")
+title("Number of SNPs vs generations", outer = T)
 ```
 
-\textsc{How are these variables related to each other?}  
+\textsc{b) How are these variables related to each other?}  
 
 Broadly, it appears that at sufficiently large population sizes, the number of SNPs is significantly correlated to the TMRCA. The linear relationship seems to get stronger with population size- below are the R^2 values for the two population size scenarios (I understand that I am breaking assumptions of normally distributed data, etc., given that this is count data... but this seems to be a decent first-cut?).  
 
@@ -369,7 +369,7 @@ rsq_big_pop <- summary(lm(coal_times~num_snps))$adj.r.squared
 round(rsq_small_pop, 4); round(rsq_big_pop, 4)
 ```
 
-\textsc{Does the number of SNPs tell you anything about the TMRCA?}
+\textsc{e) Does the number of SNPs tell you anything about the TMRCA?}
 
 If we have an estimate of SNP count in a population and a reliable model to relate SNPs to TMRCAs (having a good model requires a good estimate of mutation rate, which may not be readily available ubiquitously), we could reconstruct the demographic history of a population.  
 
@@ -377,7 +377,7 @@ If we have an estimate of SNP count in a population and a reliable model to rela
 
 \textsc{Imagine that you sequenced a 10kb region of DNA from single individual (a diploid species; i.e. you have a sample of 2 chromosomes).  You observed 10 SNPs in that 10kb interval. Note that independent evidence suggests a mutation rate of 1 x 10-8 per base pair/generation. (Hint: this is very similar to what you’ve simulated)}
 
-\textsc{Use coalescent simulations to evaluate whether a model with N=10,000 is compatible with your observed data? Put another way, what proportion of simulation replicates from this model have >= 10 SNPs?}
+\textsc{a) Use coalescent simulations to evaluate whether a model with N=10,000 is compatible with your observed data? Put another way, what proportion of simulation replicates from this model have >= 10 SNPs?}
 
 ```{r question-12-a}
 N <- 10000
@@ -396,12 +396,9 @@ mean(coal_times_12); 2*N
 
 # Step 2: simulate SNPs ------------
 
-num_snps_12 <- numeric(reps)
 
-for(i in 1:length(coal_times_12)) {
-  net_mutation_rate <- 2*bps*mu*coal_times_12[i]
-  num_snps_12[i] <- rpois(1, net_mutation_rate)
-}
+net_mutation_rates <- 2*bps*coal_times_12*mu
+num_snps_12 <- rpois(reps, net_mutation_rates)
 
 # mean(num_snps_12); 4*N*mu*bps
 
@@ -417,7 +414,7 @@ sum(num_snps_12 >= 10)/length(num_snps_12)
 
 When $N = 10000$, ~10% of the simulations yield >= 10 SNPs. 
 
-\textsc{ Is the model with N=1,000 compatible with your observed data? What is the proportion of simulation replicates that have >= 10 SNPs?}
+\textsc{b) Is the model with N = 1,000 compatible with your observed data? What is the proportion of simulation replicates that have >= 10 SNPs?}
 
 ```{r question-12-b, cache = T}
 N <- 1000
@@ -434,12 +431,8 @@ mean(coal_times_12); 2*N
 
 # Step 2: simulate SNPs ------------
 
-num_snps_12 <- numeric(reps)
-
-for(i in 1:length(coal_times_12)) {
-  net_mutation_rate <- 2*bps*mu*coal_times_12[i]
-  num_snps_12[i] <- rpois(1, net_mutation_rate)
-}
+net_mutation_rates <- 2*bps*mu*coal_times_12
+num_snps_12 <- rpois(reps, net_mutation_rates)
 
 # Plot
 par(mfrow = c(1,1))
