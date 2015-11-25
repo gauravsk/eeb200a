@@ -326,11 +326,9 @@ coal_times_small <- rexp(reps, rate)
 mean(coal_times)
 
 mu <- 1*10^-4
-num_snps_small <- numeric(reps)
-for (i in 1:length(coal_times_small)) {
-  net_mutation_rate <- 2*mu*coal_times_small[i]
-  num_snps_small[i] <- rpois(1, net_mutation_rate)
-}
+
+net_mutation_rate <- 2*mu*coal_times_small
+num_snps_small <- rpois(length(coal_times_small), net_mutation_rate)
 
 mean(num_snps_small)
 theta <- 4*N*mu; theta; mean(num_snps_small)
@@ -356,6 +354,7 @@ plot(x = coal_times, y = num_snps, xlab = "Time to coalescence",
      ylab = "Number of SNPs accumulated", pch = 19, col = color)
 mtext(side = 3, text = "N = 10000")
 title("Number of SNPs vs generations", outer = T)
+mtext("Note the unequal X and Y axes", outer = T, side = 3, line = -2)
 ```
 
 \textsc{b) How are these variables related to each other?}  
@@ -412,7 +411,7 @@ abline(v = 10, lwd = 2)
 sum(num_snps_12 >= 10)/length(num_snps_12)
 ```
 
-When $N = 10000$, ~10% of the simulations yield >= 10 SNPs. 
+When $N = 10000$, ~10% of the simulations yield >= 10 SNPs- the model is supported here. I imagine that the proportion of simations that yield >=10 SNPs will increase if we simulate larger populations- so is it most parsimonious to accept a model that supports the observed SNP count with the smallest value of N? 
 
 \textsc{b) Is the model with N = 1,000 compatible with your observed data? What is the proportion of simulation replicates that have >= 10 SNPs?}
 
