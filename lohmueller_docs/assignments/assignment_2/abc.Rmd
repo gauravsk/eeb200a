@@ -3,63 +3,93 @@ title: "Approximate Bayesian Computation exercise"
 author: "Gaurav Kandlikar"
 date: "November 23, 2015"
 output: pdf_document
+header-includes: \usepackage{graphicx}
+fontsize: 10pt
+geometry: margin=1in
 ---
 
 ## Estimation of population size
 
 **Scenario**: Imagine that you resequenced a 100kb region of two Y chromosomes, which are non-recombining. You observe 50 SNPs within this region. You would like to use this dataset to estimate the effective population size of males. You know that the mutation rate per base pair on the Y chromosome is $\mu = 1e^{-8}$ per generation.  
 
-Let's develop an ABC approach to this:
+Let's develop an ABC approach to this. 
+
+***Since I have to redo this a few times over this assignment, I wrote a function to generate a SNP distribution given a distribution of Ns***: 
+```{r generate-snp-counts}
+
+generate_snp_counts <- function(reps = 1e6, min_n = 100, max_n = 100000, mu = 1e-8, 
+                                bps = 100000, autosome = F, observed_snps = 50) {
+  
+  # Part A: Draw Ns from distribution --------
+  if(!autosome) {
+    N <- runif(reps, min_n, max_n)
+  } else { # If an autosome, we are working on estimating 2N- think about this more
+    N <- runif(reps, 2*min_n, 2*max_n) 
+  }
+  
+  # Part B: For each value of N, simulate a TMRCA.
+  rates <- 1/N
+  coal_times <- rexp(reps, rates)
+  net_mutation_rates <- 2*mu*bps*coal_times
+  
+  # Part C: For each TMRCA, add a Poisson distributed number of mutations
+  num_snps <- rpois(reps, net_mutation_rates)
+  lineages <- cbind(N, coal_times, num_snps)
+  
+  # Part D: d) We now need to decide which of the million draws from the priors to accept 
+             # i.e. which are "close enough". Here, close enough is defined as 45 - 55
+  accept <- subset(lineages, lineages[,3] >= 0.9*observed_snps & lineages[,3] <= 1.1*observed_snps)
+  
+  # Return
+  return(list("all" = data.frame(lineages), "accepted" = data.frame(accept)))
+}
+```
+
+\clearpage 
 
 ### Question 1
 
 \textsc{a) Assume that $N$ can be any value between 100 and 100000. Draw 1 million values from the prior distribution of $N$, assuming $N~[100, 100000]$}  
 
-```{r question-1-a, cache = T}
-# Draw Ns from distribution --------
+```{r question-1}
 reps <- 1e6
-min = 100; max = 100000
-N <- runif(reps, min, max)
-# Mean should be min+max/2
-(min+max)/2; mean(N)
-```
-
-\textsc{b) For each value of N, simulate a TMRCA.}
-
-```{r question-1-b, cache = T}
-# Generate coalescent times ---------
-rates <- 1/(N) # Only 1 Y chromosome in males...
-coal_times <- rexp(reps, rates)
-# Mean should be the same as mean(N)
-mean(coal_times)
-```
-
-\textsc{c) For each TMRCA, add a Poisson distributed number of mutations}
-
-```{r question-1-c, cache = T}
-# Generate SNPs -----------
+min <- 100; max <- 100000
 mu <- 1e-8
 bps <- 100000
-net_mutation_rates <- 2*mu*bps*coal_times
-num_snps <- rpois(reps, net_mutation_rates)
-# Mean should be approx 2Nu
-mean(2*(N)*mu*bps); mean(num_snps)
+
+q1_full <- generate_snp_counts(reps = reps, min_n = min, max_n = max, mu = mu, bps = bps, 
+                               autosome = F, observed_snps = 50)
+q1_prior <- q1_full$all
+q1_posterior <- q1_full$accepted
 ```
 
-\textsc{d) We now need to decide which of the million draws from the priors to accept i.e. which are "close enough". Here, close enough is defined as "between 45 and 55"}
+Now that we've run this, let's do a sanity check to make sure everything is in order here. 
 
-```{r question-1-d, cache = T}
-lineages <- cbind(N, coal_times, num_snps)
 
-# Subset to the draws of N that gave rise to 45-55 SNPs
-accept <- subset(lineages, lineages[,3] < 56 & lineages[,3] > 44)
+```{r question-1-sanity}
+# Make sure the prior was set up well ---------
+# N should be distributed between 100 and 100000
+min(q1_prior$N); max(q1_prior$N)
+# mean of uniform = (min+max)/2
+mean(q1_prior$N); (min+max)/2
 
-# Make sure it worked
-min(accept[,3]); max(accept[,3])
+# Mean of coal_time should be mean of N- not sure this is also expected SD since it's 
+# sampling from a range
+mean(q1_prior$coal_times); sd(q1_prior$coal_times)
 
-# Proportion of samples we keep 
-nrow(accept)/reps
+# Mean number of SNPs should be equal to 2*N*mu*bps
+mean(q1_prior$num_snps); mean(2*mu*q1_prior$N*bps)
+
+
+
+# Make sure that we accepted the right things -------
+# Should be between 45 and 55-
+min(q1_posterior$num_snps); max(q1_posterior$num_snps)
+
+# Percent of rows we accepted-
+nrow(q1_posterior)/nrow(q1_prior)
 ```
+
 \textsc{e) Congratulations! You should be all done!.}   
 ***Thanks!***
 
@@ -67,12 +97,24 @@ nrow(accept)/reps
 
 \textsc{Make a density plot of the prior and the posterior distributions.}  
 
-```{r question-2, cache = T}
-# Plot
-plot(density(N), lwd = 2, ylim = c(0, 0.000015), main = "Distribution of Ns", xlab = "Population size")
-lines(density(accept[,1]), col = "darkred", lwd = 2)
-legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
+***I will write a function for this too***:
+```{r combined-plot-function}
+combined_density_plot <- function(xx) {
+  all <- xx$all
+  accepts <- xx$accepted
+  
+  plot(density(accepts[,"N"]), main = "Distribution of Ns", xlab = "Population size", 
+       col = "darkred", lwd = 2)
+  lines(density(all[,"N"]), lwd = 2)
+  legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
        bty = "n", lwd = 2)
+}
+
+```
+
+Now, use the function above to generate the plot for q1:
+```{r}
+combined_density_plot(q1_full)
 ```
 
 ### Question 3 and 4
@@ -81,10 +123,12 @@ legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "po
 
 ```{r question-3-4, cache = T}
 # Metrics on accepted Ns
-mean <- mean(accept[,1]); mean
-med <- median(accept[,1]); med
-quantile(accept[,1], c(0.025, 0.975))
+mean(q1_posterior$N)
+median(q1_posterior$N)
+quantile(q1_posterior$N, c(0.025, 0.975))
 ```
+
+\clearpage
 
 ### Question 5  
 
@@ -97,52 +141,58 @@ The posterior distribution of $N$ is slightly narrower than the uniform prior fr
 
 \textsc{Repeat the ABC analysis with $N~[1000, 100000]$}
 
-```{r question-6, results="hold"}
-# a) Draw Ns from distribution --------
+```{r question-6}
 reps <- 1e6
-min = 1000; max = 100000
-N <- runif(reps, min, max)
-# Mean should be min+max/2
-print("Expected and real Mean N");(min+max)/2; mean(N)
-
-# b) Generate coalescent times ---------
-rates <- 1/(N) # Only 1 Y chromosome in males...
-coal_times <- rexp(reps, rates)
-# Mean should be the same as mean(N)
-print("Mean coal time"); mean(coal_times)
-
-# c) Generate SNPs -----------
+min <- 1000; max <- 100000
 mu <- 1e-8
 bps <- 100000
-net_mutation_rates <- 2*mu*bps*coal_times
-num_snps <- rpois(reps, net_mutation_rates)
-# Mean should be approx 2Nu
-print("Expected and real mean Num SNPs");mean(2*(N)*mu*bps); mean(num_snps)
-lineages <- cbind(N, coal_times, num_snps)
 
-# d) Subset to the draws of N that gave rise to 45-55 SNPs
-accept <- subset(lineages, lineages[,3] < 56 & lineages[,3] > 44)
+q6_full <- generate_snp_counts(reps = reps, min_n = min, max_n = max, mu = mu, bps = bps, 
+                               autosome = F, observed_snps = 50)
 
-# Make sure it worked
-print("Min and Max SNPs in accepts");min(accept[,3]); max(accept[,3])
-
-# Proportion of samples we keep 
-print("Proportion of samples accepted");nrow(accept)/reps
-
-
-# Plot density of prior and posterior distributions
-plot(density(N), lwd = 2, ylim = c(0, 0.000015), main = "Distribution of Ns", xlab = "Population size")
-lines(density(accept[,1]), col = "darkred", lwd = 2)
-legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
-       bty = "n", lwd = 2)
-
-# Metrics on accepted Ns
-print("Mean value of accept"); mean <- mean(accept[,1]); mean
-print("Median value of accept"); med <- median(accept[,1]); med
-print("95 CI of median"); quantile(accept[,1], c(0.025, 0.975))
+q6_prior <- q6_full$all
+q6_posterior <- q6_full$accepted
 ```
 
-\textsc{What is the mean, median, and 95 CI for the posterior? How dies this differ from the values computed in q3-4? What does this tell you about the effect of the prior distribution in Bayesian statistics?}
+Now that things are generated, let's do another sanity check:
+
+```{r question-6-sanity}
+# Make sure the prior was set up well ---------
+# N should be distributed between 1000 and 100000
+min(q6_prior$N); max(q6_prior$N)
+# mean of uniform = (min+max)/2
+mean(q6_prior$N); (min+max)/2
+
+# Mean of coal_time should be mean of N- not sure this is also expected SD since it's sampling 
+# from a range
+mean(q6_prior$coal_times); sd(q6_prior$coal_times)
+
+# Mean number of SNPs should be equal to 2*N*mu*bps
+mean(q6_prior$num_snps); mean(2*mu*q6_prior$N*bps)
+
+
+# Make sure that we accepted the right things -------
+# Should be between 45 and 55-
+min(q6_posterior$num_snps); max(q6_posterior$num_snps)
+
+# Percent of rows we accepted-
+nrow(q6_posterior)/nrow(q6_prior)
+```
+
+OK, all looks in order. Let's make the combined density plot:
+```{r question-6-plot}
+combined_density_plot(q6_full)
+```
+
+The plot does not look very different. We can run the same metrics on the posterior distribution of N:
+```{r}
+# Metrics on accepted Ns
+mean(q6_posterior$N)
+median(q6_posterior$N)
+quantile(q6_posterior$N, c(0.025, 0.975))
+```
+
+\textsc{How does the prior differ from the values computed in q3-4? What does this tell you about the effect of the prior distribution in Bayesian statistics?}
 
 The mean, median, and quantiles using a the prior $N~[1000, 100000]$ did not differ very much than when a prior of $N~[100, 100000]$ was used- this suggests that the Bayesian approach is robust to imperfect priors. This makes sense as long as the prior is greater than the true value (i.e what the posterior will estimate)- it might be fun to redo this with a prior of $N~[50000, 100000]$. I've done that at the end of this document. 
 
@@ -168,7 +218,8 @@ If we sequence 10KB from autosomes -
   Step 2 does change- E[coal time] = 1/2N, rather than 1/N
   Step 3 will change because step 2 has changed- mean 
 
-# Work on this!
+
+\clearpage 
 
 ## Estimates of population split times   
 
@@ -215,38 +266,40 @@ bps <- 100000
 net_mutation_rates <- 2*mu*net_coal_times*bps
 num_snps <- rpois(reps, net_mutation_rates)
 
-lineages <- cbind(t_splits, net_coal_times, num_snps)
+q2_3_lineages <- data.frame(cbind(t_splits, net_coal_times, num_snps))
 
 # Sanity check: confirm that all net_coal_times - t_splits == coal_times_pre_split
-ttt <- round(lineages[,2]-lineages[,1])
+ttt <- round(q2_3_lineages$net_coal_times-q2_3_lineages$t_splits)
 all(ttt == round(coal_times_pre_split))
 rm(ttt)
 ```
 
 d) We need to decide which of the million draws of the prior to keep for the posterior. Assume that SNP counts between 550 and 650 are acceptable for now. 
 ```{r question-2-3-d}
-# Subset to lineages that have between 550 and 650 SNPs
-accepts <- subset(lineages, lineages[,3] > 549 & lineages[,3] < 651)
+# Subset to q2_3_lineages that have between 550 and 650 SNPs
+q2_3_accepts <- subset(q2_3_lineages, q2_3_lineages$num_snps > 549 & q2_3_lineages$num_snps < 651)
 ```
 
 ### Question 4  
 
 \textsc{Make a density plot of the prior and posterior distribution of $T_{split}$}
 ```{r question-2-4}
-plot(density(lineages[,1]), ylim = c(0, 0.000008), lwd = 2, xlab = "T_split", 
+plot(density(q2_3_lineages$t_splits), ylim = c(0, 0.000008), lwd = 2, xlab = "T_split", 
      main = "Distribution of TSplits")
-lines(density(accepts[,1]), lwd = 2, col = "darkred")
+lines(density(q2_3_accepts$t_splits), lwd = 2, col = "darkred")
 legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
        bty = "n", lwd = 2)
 ```
+
+\clearpage 
 
 ### Question 5
 
 \textsc{What is the median value of the posterior distribution of $T_{split}$?}
 
 ```{r question-2-5}
-mean(accepts[,1])
-median(accepts[,1])
+mean(q2_3_accepts$t_splits)
+median(q2_3_accepts$t_splits)
 ```
 
 ### Question 6  
@@ -254,22 +307,24 @@ median(accepts[,1])
 \textsc{Generate a 95 CI for the posterior distribution of $T_{split}$}
 
 ```{r question-2-6}
-quantile(accepts[,1], probs = c(0.025, 0.975))
+quantile(q2_3_accepts[,1], probs = c(0.025, 0.975))
 ```
 
 ### Question 7   
 
 \textsc{How does the posterior differ from the prior distribution of $T_{split}$}    
-The posterior here suggests that the likeli $T_{split}$ is somewhere around 
+The posterior here suggests that the true $T_{split}$ falls between ~75,000 to ~316,000, which is a narrower range than the prior distribution from 50,000-1,000,000. 
 
-### What if ancenstral N is unknown
-```{r N-unknown}
+### Question 8 
+
+\textsc{What if we did not know the true value of $N$? Repeat the ABC above, but draw $N$ from $N~U[1000,1000000]$. }
+```{r question-8}
 reps <- 1e6
 min <- 50000
 max <- 1000000
 t_splits <- runif(reps, min, max)
 
-N_anc <- runif(reps, min = 1000, max = 1000000) # This is different
+N_anc <- runif(reps, min = 1000, max = 1000000) # This is different from above
 rates <- 1/(N_anc) # Only 1 Y chromosome in males...
 coal_times_pre_split <- rexp(reps, rates)
 
@@ -282,170 +337,61 @@ bps <- 100000
 net_mutation_rates <- 2*mu*coal_times*bps
 num_snps <- rpois(reps, net_mutation_rates)
 
-lineages <- cbind(t_splits, coal_times, num_snps)
-accepts <- subset(lineages, lineages[,3] > 549 & lineages[,3] < 651)
-# Sanity checz
-ttt <- round(lineages[,2]-lineages[,1])
-all(ttt == round(coal_times_pre_split))
-rm(ttt)
+q2_8_lineages <- data.frame(cbind(t_splits, coal_times, num_snps))
+q2_8_accepts <- subset(q2_8_lineages, q2_8_lineages$num_snps > 549 & q2_8_lineages$num_snps < 651)
 
-plot(density(lineages[,1]), ylim = c(0, 0.000007), lwd = 2, xlab = "T_split", 
+plot(density(q2_8_lineages$t_splits), ylim = c(0, 0.000007), lwd = 2, xlab = "T_split", 
      main = "Distribution of TSplits")
-lines(density(accepts[,1]), lwd = 2, col = "darkred")
+lines(density(q2_8_accepts$t_splits), lwd = 2, col = "darkred")
 legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
        bty = "n", lwd = 2)
 
-mean(accepts[,1])
-median(accepts[,1])
-quantile(accepts[,1], probs = c(0.025, 0.975))
 ```
 
 
+### Question 9
+\textsc{Do your estimates for the median and credible interval differ from above?}
+
+```{r question-2-9-N-known, results = "hold"}
+print("mean of TSplit when N known"); mean(q2_3_accepts$t_splits)
+print("median of TSplit when N known"); median(q2_3_accepts$t_splits)
+print("95CI of TSplit when N known"); quantile(q2_3_accepts$t_splits, probs = c(0.025, 0.975))
+```
 
 
-### Question 8   
+```{r question-2-9-N-unknown, results = "hold"}
+print("mean of TSplit when N unknown"); mean(q2_8_accepts$t_splits)
+print("median of TSplit when N unknown"); median(q2_8_accepts$t_splits)
+print("95CI of TSplit when N known"); quantile(q2_8_accepts$t_splits, probs = c(0.025, 0.975))
+```
 
-
-### Question 9   
-
+The median and mean estimates of $T_{split}$ are shifted whehn $N_{ancestral}$ is allowed to vary, but the estimates are of the same order of magnitude (the estimates if $N_{anc}$ is unknown tend to be ~10% lower than when $N_{anc} = 100000$.  The same applies to the confidence interval, which is shifted slightly to the left in the second scenario.)
 
 ### Question 10   
 \textsc{Did you have fun with the YM[R]CA?}
 
 
+\includegraphics[width=3cm, height=4cm]{yup.jpg}
+ 
 
+\clearpage 
+
+## Back to Part 1
 ### Investigating the consequences of an awful prior
 
 ```{r awful-prior, results="hold"}
 # Draw Ns from distribution --------
 reps <- 1e6
-min = 50000; max = 100000
-N <- runif(reps, min, max)
-# Mean should be min+max/2
-print("Expected and real Mean N");(min+max)/2; mean(N)
-# Generate coalescent times ---------
-rates <- 1/(N) # Only 1 Y chromosome in males...
-coal_times <- rexp(reps, rates)
-# Mean should be the same as mean(N)
-print("Mean coal time"); mean(coal_times)
-# Generate SNPs -----------
+min <- 50000; max <- 100000
 mu <- 1e-8
 bps <- 100000
-net_mutation_rates <- 2*mu*bps*coal_times
-num_snps <- rpois(reps, net_mutation_rates)
-# Mean should be approx 2Nu
-print("Expected and real mean Num SNPs");mean(2*(N)*mu*bps); mean(num_snps)
-lineages <- cbind(N, coal_times, num_snps)
 
-# Subset to the draws of N that gave rise to 45-55 SNPs
-accept <- subset(lineages, lineages[,3] < 56 & lineages[,3] > 44)
+awful_full <- generate_snp_counts(reps = reps, min_n = min, max_n = max, mu = mu, bps = bps, 
+                               autosome = F, observed_snps = 50)
 
-# Make sure it worked
-print("Min and Max SNPs in accepts");min(accept[,3]); max(accept[,3])
+awful_prior <- awful_full$all
+awful_posterior <- awful_full$accepted
 
-# Proportion of samples we keep 
-print("Proportion of samples accepted");nrow(accept)/reps
-
-# Plot
-plot(density(N), lwd = 2, ylim = c(0, 0.00015), main = "Distribution of Ns", xlab = "Population size")
-lines(density(accept[,1]), col = "darkred", lwd = 2)
-legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
-       bty = "n", lwd = 2)
-
-# Metrics on accepted Ns
-print("Mean value of accept"); mean <- mean(accept[,1]); mean
-print("Median value of accept"); med <- median(accept[,1]); med
-print("95 CI of median"); quantile(accept[,1], c(0.025, 0.975))
+combined_density_plot(awful_full)
 ```
 
-
-
-### sequence more of Y
-
-```{r more-on-y, results="hold"}
-# Draw Ns from distribution --------
-reps <- 1e6
-min = 100; max = 100000
-N <- runif(reps, min, max)
-# Mean should be min+max/2
-print("Expected and real Mean N");(min+max)/2; mean(N)
-# Generate coalescent times ---------
-rates <- 1/(N) # Only 1 Y chromosome in males...
-coal_times <- rexp(reps, rates)
-# Mean should be the same as mean(N)
-print("Mean coal time"); mean(coal_times)
-# Generate SNPs -----------
-mu <- 1e-8
-bps <- 200000
-net_mutation_rates <- 2*mu*bps*coal_times
-num_snps <- rpois(reps, net_mutation_rates)
-# Mean should be approx 2Nu
-print("Expected and real mean Num SNPs");mean(2*(N)*mu*bps); mean(num_snps)
-lineages <- cbind(N, coal_times, num_snps)
-
-# Subset to the draws of N that gave rise to 45-55 SNPs
-accept <- subset(lineages, lineages[,3] < 56 & lineages[,3] > 44)
-
-# Make sure it worked
-print("Min and Max SNPs in accepts");min(accept[,3]); max(accept[,3])
-
-# Proportion of samples we keep 
-print("Proportion of samples accepted");nrow(accept)/reps
-
-# Plot
-plot(density(N), lwd = 2, ylim = c(0, 0.000015), main = "Distribution of Ns", xlab = "Population size")
-lines(density(accept[,1]), col = "darkred", lwd = 2)
-legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
-       bty = "n", lwd = 2)
-
-# Metrics on accepted Ns
-print("Mean value of accept"); mean <- mean(accept[,1]); mean
-print("Median value of accept"); med <- median(accept[,1]); med
-print("95 CI of median"); quantile(accept[,1], c(0.025, 0.975))
-```
-
-
-
-### sequence same on autosomes
-
-```{r same-on-autosomes, results="hold"}
-# Draw Ns from distribution --------
-reps <- 1e6
-min = 100; max = 100000
-N <- 2*runif(reps, min, max)
-# Mean should be min+max/2
-print("Expected and real Mean N");(min+max); mean(N)
-# Generate coalescent times ---------
-rates <- 1/(N)
-coal_times <- rexp(reps, rates)
-# Mean should be the same as mean(N)
-print("Mean coal time"); mean(coal_times)
-# Generate SNPs -----------
-mu <- 1e-8
-bps <- 100000
-net_mutation_rates <- 2*mu*bps*coal_times
-num_snps <- rpois(reps, net_mutation_rates)
-# Mean should be approx 2Nu
-print("Expected and real mean Num SNPs");mean(2*(N)*mu*bps); mean(num_snps)
-lineages <- cbind(N, coal_times, num_snps)
-
-# Subset to the draws of N that gave rise to 45-55 SNPs
-accept <- subset(lineages, lineages[,3] > 89 & lineages[,3] < 111)
-
-# Make sure it worked
-print("Min and Max SNPs in accepts");min(accept[,3]); max(accept[,3])
-
-# Proportion of samples we keep 
-print("Proportion of samples accepted");nrow(accept)/reps
-
-# Plot
-plot(density(N), lwd = 2, ylim = c(0, 0.000015), main = "Distribution of Ns", xlab = "Population size")
-lines(density(accept[,1]), col = "darkred", lwd = 2)
-legend("topright", lty = 1, col = c("black", "darkred"), legend = c("prior", "posterior"), 
-       bty = "n", lwd = 2)
-
-# Metrics on accepted Ns
-print("Mean value of accept"); mean <- mean(accept[,1]); mean
-print("Median value of accept"); med <- median(accept[,1]); med
-print("95 CI of median"); quantile(accept[,1], c(0.025, 0.975))
-```
