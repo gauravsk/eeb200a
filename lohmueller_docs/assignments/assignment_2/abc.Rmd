@@ -18,17 +18,18 @@ Let's develop an ABC approach to this.
 ```{r generate-snp-counts}
 
 generate_snp_counts <- function(reps = 1e6, min_n = 100, max_n = 100000, mu = 1e-8, 
-                                bps = 100000, autosome = F, observed_snps = 50) {
+                                bps = 100000, autosome = F, observed_snps = 50,
+                                num_independent_sites = 1) {
   
   # Part A: Draw Ns from distribution --------
-  if(!autosome) {
-    N <- runif(reps, min_n, max_n)
-  } else { # If an autosome, we are working on estimating 2N- think about this more
-    N <- runif(reps, 2*min_n, 2*max_n) 
-  }
-  
+  N <- runif(reps, min_n, max_n)
+
   # Part B: For each value of N, simulate a TMRCA.
-  rates <- 1/N
+  if(!autosome) {
+    rates <- 1/N
+  } else { # If an autosome, we are working on estimating 2N- think about this more
+    rates <- 1/(2*N*num_independent_sites) 
+  }
   coal_times <- rexp(reps, rates)
   net_mutation_rates <- 2*mu*bps*coal_times
   
@@ -79,7 +80,6 @@ mean(q1_prior$coal_times); sd(q1_prior$coal_times)
 
 # Mean number of SNPs should be equal to 2*N*mu*bps
 mean(q1_prior$num_snps); mean(2*mu*q1_prior$N*bps)
-
 
 
 # Make sure that we accepted the right things -------
@@ -200,23 +200,7 @@ The mean, median, and quantiles using a the prior $N~[1000, 100000]$ did not dif
 
 \textsc{If you wanted a more precise estimate of the population size, would you be better off A) sequencing a bigger region of the Y chromosome, or B) sequencing the same amount on the autosomes? Why?} 
 
-These are the steps to get a population size estimate from Number of SNPs:
-
-1. Simulate population sizes;   
-2. Simulate coal times based on step (1); 
-3. Simulate number of SNPs based on step (2), the mutation rate, and the number of BPs sequenced;
-4. Susbet step (1) to those lineages that yielded agreeable SNP counts. 
-
-If we sequence more BPs from the Y chromosome- 
-  Step 1 doesn't change;
-  Step 2 doesn't change;
-  Step 3 does change- mean (# SNPs simulated will be higher). If new seq length = Y(10KB), new mean SNP count = Y(original SNP count)
-  Step 4 will change if we don't update the observed number of SNPs. 
-  
-If we sequence 10KB from autosomes -
-  Step 1 doesn't change
-  Step 2 does change- E[coal time] = 1/2N, rather than 1/N
-  Step 3 will change because step 2 has changed- mean 
+To get a more precise estimate, I would be better off sequencing the same amount on autosomes. We know that autosomes undergo recombination- in fact, the same pair of chromosomes can recombine multiple times. If we take this to an extreme, we could model each locus on an autosome as being inherited independently of the other- while on the Y chromosome, we know that there is no recombination, so when we sequence more, we are in fact just sequencing more of the same single geneology. My sense is that sequencing autosomes would give us a better estimate of the true number of SNPs we see- here, we just have the one number (50 SNPs), but if we sequence unlinked regions from autosomes, we would expect to see a distribution of SNP count on each locus. This might allow us to narrow our "acceptance" interval to derive a posterior distribution.  
 
 
 \clearpage 
@@ -227,7 +211,7 @@ If we sequence 10KB from autosomes -
 
 \textsc{Once the two chromosomes make it back into the ancestral population of size 100000, what is the expected amount of additional time we have to wait until they coalesce?}   
 
-Since we are dealing with the Y chromosome, of which there is only 1 copy in diploid men, the expected coalescent time is equal to $N$- here, $E[T_{sans\ split}] = 100000$. 
+Since we are dealing with the Y chromosome, of which there is only 1 copy in diploid men, the expected coalescent time is equal to $N$- here, $E[T_{before\ split}] = 100000$. 
 
 ### Question 2  
 
@@ -362,10 +346,10 @@ print("95CI of TSplit when N known"); quantile(q2_3_accepts$t_splits, probs = c(
 ```{r question-2-9-N-unknown, results = "hold"}
 print("mean of TSplit when N unknown"); mean(q2_8_accepts$t_splits)
 print("median of TSplit when N unknown"); median(q2_8_accepts$t_splits)
-print("95CI of TSplit when N known"); quantile(q2_8_accepts$t_splits, probs = c(0.025, 0.975))
+print("95CI of TSplit when N unknown"); quantile(q2_8_accepts$t_splits, probs = c(0.025, 0.975))
 ```
 
-The median and mean estimates of $T_{split}$ are shifted whehn $N_{ancestral}$ is allowed to vary, but the estimates are of the same order of magnitude (the estimates if $N_{anc}$ is unknown tend to be ~10% lower than when $N_{anc} = 100000$.  The same applies to the confidence interval, which is shifted slightly to the left in the second scenario.)
+The median and mean estimates of $T_{split}$ are shifted slightly when $N_{ancestral}$ is allowed to vary, but the estimates are of the same order of magnitude (the estimates if $N_{ancestral}$ is unknown tend to be ~10% lower than when $N_{ancestral} = 100000$.  The same applies to the confidence interval, which is shifted slightly to the left in the second scenario.) Based on this small difference, and because we are unlikely to have full confidence in a single ancestal population size, applying this sort of framework to allow $N_{ancestral}$ to vary is a great idea. If we are reasonable confident that $N_{ancestral}$ is in fact 100000, we can still generate a distribution with that value as the mean, and try to estimate $T_{split}$ from there. 
 
 ### Question 10   
 \textsc{Did you have fun with the YM[R]CA?}
@@ -376,7 +360,9 @@ The median and mean estimates of $T_{split}$ are shifted whehn $N_{ancestral}$ i
 
 \clearpage 
 
-## Back to Part 1
+## Back to Part 1 
+Just doing this for my own curiosity-- no need to grade. 
+
 ### Investigating the consequences of an awful prior
 
 ```{r awful-prior, results="hold"}
@@ -395,3 +381,40 @@ awful_posterior <- awful_full$accepted
 combined_density_plot(awful_full)
 ```
 
+### More on Y or same on autosomes?
+
+```{r more-on-y}
+reps <- 1e6
+min <- 1000; max <- 100000
+mu <- 1e-8
+bps <- 200000
+
+morey_full <- generate_snp_counts(reps = reps, min_n = min, max_n = max, mu = mu, bps = bps, 
+                               autosome = F, observed_snps = 100)
+
+morey_prior <- morey_full$all
+morey_posterior <- morey_full$accepted
+
+combined_density_plot(morey_full)
+```
+
+```{r autosomes}
+reps <- 1e6
+min <- 1000; max <- 100000
+mu <- 1e-8
+bps <- 100000
+
+auto_full <- generate_snp_counts(reps = reps, min_n = min, max_n = max, mu = mu, bps = bps, 
+                               autosome = T, observed_snps = 100, num_independent_sites = 2)
+
+auto_prior <- auto_full$all
+auto_posterior <- auto_full$accepted
+
+combined_density_plot(auto_full)
+quantile(auto_posterior$N, probs = c(0.025, 0.975))
+quantile(morey_posterior$N, probs = c(0.025, 0.975))
+
+```
+
+
+Since there is no recombination modeled here, we don't seem much going on. 
